@@ -1,4 +1,4 @@
-import { renderModelPreview } from './pixel-model.js?v=25';
+import { renderModelPreview } from './pixel-model.js?v=26';
 
 // Legacy catalogue entries retain their 32x32 preview; the four active
 // companions use the detailed articulated model for previews and the stage.
