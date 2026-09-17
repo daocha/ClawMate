@@ -1,4 +1,7 @@
 <p align="center">
+  <img src="public/assets/artwork/clawmate.png" alt="ClawMate Logo" width="100%">
+</p>
+<p align="center">
   <img src="public/assets/artwork/readme-hero-latest.png" alt="ClawMate Banner" width="100%">
 </p>
 
