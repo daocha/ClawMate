@@ -1,11 +1,11 @@
-const CACHE = 'clawmate-v28';
+const CACHE = 'clawmate-v34';
 const SCOPE_PATH = new URL(self.registration.scope).pathname.replace(/\/?$/, '/');
 const API_PATH = `${SCOPE_PATH}api/`;
 const SHELL = [
-  './', './index.html', './css/app.css?v=25', './manifest.webmanifest',
-  './js/app.js?v=26', './js/pet.js?v=26', './js/chat.js', './js/settings.js', './js/i18n.js', './js/companions.js',
+  './', './index.html', './css/app.css?v=29', './manifest.webmanifest',
+  './js/app.js?v=28', './js/pet.js?v=28', './js/chat.js', './js/settings.js', './js/i18n.js', './js/companions.js',
   './js/urls.js',
-  './js/characters.js', './js/face.js', './js/render-real.js?v=24', './js/render-chibi.js?v=24', './js/render-pixel.js?v=26', './js/pixel-model.js?v=26', './js/interactions.js?v=25',
+  './js/characters.js', './js/face.js', './js/render-real.js?v=24', './js/render-chibi.js?v=24', './js/render-pixel.js?v=27', './js/render-cartoon.js?v=1', './js/pixel-model.js?v=27', './js/interactions.js?v=26',
   './assets/hd/momo-young-v2.png', './assets/hd/momo-knee-v4.png', './assets/hd/aria-knee-v3.png', './assets/hd/aria-s-curve-full-v5.png', './assets/hd/mochi-real-longhair-v5.png', './assets/hd/mochi.png', './assets/hd/coco.png',
   './assets/hd/luna.png', './assets/hd/kiko.png', './assets/hd/bao.png', './assets/hd/ember.png',
   './assets/hd/pino.png', './assets/hd/nova.png',
@@ -13,6 +13,8 @@ const SHELL = [
   './assets/chibi/momo-painted-v4.png', './assets/chibi/aria-painted-v4.png', './assets/chibi/mochi-painted-v2.png', './assets/chibi/coco-painted-v2.png',
   './assets/chibi/luna.png', './assets/chibi/kiko.png', './assets/chibi/bao.png', './assets/chibi/ember.png',
   './assets/chibi/pino.png', './assets/chibi/nova.png',
+  './assets/pixel-momo-v3-1.png', './assets/pixel-momo-v3-2.png', './assets/pixel-aria-v3-1.png', './assets/pixel-aria-v3-2.png',
+  './assets/pixel-mochi-v3-1.png', './assets/pixel-mochi-v3-2.png', './assets/pixel-coco-v3-1.png', './assets/pixel-coco-v3-2.png',
   './icons/icon-180.png', './icons/icon-192.png', './icons/icon-512.png'
 ];
 

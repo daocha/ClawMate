@@ -74,9 +74,9 @@ export function attachInteractions(stage, pet, opts = {}) {
     }
 
     if (s.moved) return;
-    // The pixel model responds to every single tap immediately. Other art
-    // styles retain their existing double-tap gesture.
-    if (pet.pixelAnimator) {
+    // The pixel model and the cartoon reference art respond to every single
+    // tap immediately. Other art styles retain their existing double-tap gesture.
+    if (pet.pixelAnimator || pet.cartoonImg) {
       clearTimeout(pendingTap);
       lastTapAt = 0;
       haptics();

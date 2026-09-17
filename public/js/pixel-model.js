@@ -129,13 +129,19 @@ export function poseAt(action = null, progress = 0, time = 0, still = false) {
   return p;
 }
 
-const HUMAN = {
-  outline: '#573326', hairDark: '#614031', hair: '#92644e', hairLight: '#bc8868', hairShine: '#e0af89',
-  skin: '#ffdab9', skinShade: '#edac8a', skinLight: '#ffe8cc', cream: '#fff5de', seam: '#d7bfa0',
-  pink: '#eea1af', pinkLight: '#ffc0ca', pinkDark: '#b9667e', gold: '#d8a53c', white: '#fffdf4'
+// Pixel-only palettes follow artwork/clawmate.png; other styles keep their catalogue palettes.
+const MOMO = {
+  outline: '#754354', hairDark: '#bf7396', hair: '#f3adca', hairLight: '#ffd3de', hairShine: '#fff0e8',
+  skin: '#ffdacb', skinShade: '#eaa2a4', skinLight: '#fff0dc', cream: '#fff1e9', seam: '#caa6c9',
+  pink: '#e791b4', pinkLight: '#ffc9de', pinkDark: '#ac547b', gold: '#edbc65', white: '#fff8ef'
+};
+const ARIA = {
+  outline: '#211d30', hairDark: '#302735', hair: '#4b3945', hairLight: '#72515e', hairShine: '#a6757b',
+  skin: '#ffdacb', skinShade: '#df9f9e', skinLight: '#ffecdd', cream: '#302b41', seam: '#57506e',
+  pink: '#363046', pinkLight: '#57506e', pinkDark: '#211d30', gold: '#72b7ef', white: '#aaa2ca'
 };
 
-function eye(g, x, y, cat, closed, happy, dog = false) {
+function eye(g, x, y, cat, closed, happy, dog = false, iris = null) {
   // The reference cats have large green irises; the women's eyes are narrower
   // almond shapes. Scaling the same eye equally made every face look alike.
   const target = g, sx = cat ? 1.3 : dog ? 1.05 : .78, sy = cat ? 1.22 : dog ? .95 : .82;
@@ -152,17 +158,16 @@ function eye(g, x, y, cat, closed, happy, dog = false) {
   }
   g.ellipse(x, y, dog ? 5 : 6, 7, dark);
   g.ellipse(x + 1, y + 1, 4, 5, '#fffdf5');
-  g.ellipse(x, y + 1, 3.5, 5, cat ? '#39945c' : '#744024');
+  g.ellipse(x, y + 1, 3.5, 5, iris || (cat ? '#39945c' : '#744024'));
   g.ellipse(x - .5, y, 2.5, 4, dark);
-  g.rect(x - 2, y + 3, 4, 2, cat ? '#a4db69' : '#b77e47');
+  g.rect(x - 2, y + 3, 4, 2, iris ? (iris === '#a44378' ? '#f996bd' : '#b3a4f1') : cat ? '#a4db69' : '#b77e47');
   g.rect(x - 2, y - 4, 2, 3, '#ffffff');
   g.rect(x + 2, y - 1, 1, 2, '#ffffff');
 }
 
 function human(g, spec, p, face) {
-  const c = HUMAN, momo = spec.id === 'momo';
-  // Each character has her own resting gesture. Action deltas retain their
-  // meaning, so a wave returns to the book-holding / greeting pose naturally.
+  const momo = spec.id === 'momo', c = momo ? MOMO : ARIA;
+  // Each character keeps her resting gesture when an action finishes.
   p = { ...p, arms: p.arms.map(a => [...a]), legs: p.legs.map(a => [...a]) };
   p.arms[0][0] += momo ? .26 : -.16;
   p.arms[0][1] += momo ? .55 : 1.35;
@@ -171,12 +176,12 @@ function human(g, spec, p, face) {
   p.legs[0][1] -= momo ? .22 : .1;
   p.legs[1][0] -= momo ? .1 : .26;
   p.legs[1][1] += momo ? .05 : .16;
-  const skirt = momo ? c.pink : '#683a59', skirtShade = momo ? c.pinkDark : '#4c2745';
+  const skirt = c.pink, skirtShade = c.pinkDark;
   const ox = p.x, oy = p.y;
   const body = (x, y) => [x + ox + p.lean * (108 - y) / 45, y + oy + p.breathe * (108 - y) / 45];
   const hx = ox + p.lean * 1.35 + p.head * .35, hy = oy + p.breathe + p.head * .4;
-  const head = (x, y) => [50 + (x-50)*1.08 + hx + p.head * (y - 48) / 35 + Math.max(0, y - 44) / 22 * p.tail * .16,
-    12+(y-12)*(1-(p.bow||0)*.16) + hy + (x - 50) * (momo ? .08 : .13)];
+  const head = (x, y) => [50 + (x-50)*1.18 + hx + p.head * (y - 48) / 35 + Math.max(0, y - 44) / 22 * p.tail * .16,
+    12+(y-12)*1.15*(1-(p.bow||0)*.16) + hy + (x - 50) * (momo ? .04 : .07)];
   // Cloth is a deforming surface: the hem lags behind the hips and widens
   // over a lifted knee, while the waistband remains attached to the torso.
   const cloth = (x, y) => {
@@ -188,6 +193,26 @@ function human(g, spec, p, face) {
   const ellipse = (x, y, rx, ry, color, transform = body) => g.ellipse(...transform(x, y), rx, ry, color);
   const line = (a, b, r, color, transform = body) => g.line(transform(...a), transform(...b), r, color);
 
+  const tail = [[65,103],[82,104],[90,94],[89+p.tail*.3,81],[94+p.tail*.4,77]];
+  for (const [color,r] of [[c.outline,4],[c.hair,2.8]]) {
+    for (let i=0;i<tail.length-1;i++) line(tail[i],tail[i+1],r,color);
+  }
+  line(tail[3],tail[4],2.8,momo?c.hairLight:'#9984b7');
+
+  // Cat ears and long side locks are attached to the head, including in a bow.
+  for (const pts of [ [[20,29],[18,8],[24,9],[39,23]], [[61,22],[77,8],[81,12],[78,32]] ]) {
+    poly(pts,c.outline,head);
+  }
+  poly([[22,26],[21,12],[34,23]],c.hair,head);
+  poly([[66,23],[76,12],[77,28]],c.hair,head);
+  poly([[24,23],[23,16],[31,23]],momo ? '#ea8daf' : '#c19ab9',head);
+  poly([[69,24],[75,16],[75,27]],momo ? '#ea8daf' : '#c19ab9',head);
+  for (const x of [25,70]) poly([[x,22],[x+3,20],[x+2,24],[x+5,25],[x,27]],c.white,head);
+  for (const [x,s] of [[24,-1],[73,1]]) {
+    poly([[x,38],[x+s*6,55],[x+s*5,74],[x+s*10,89],[x,97],[x-s*7,90],[x-s*2,72]],c.outline,head);
+    poly([[x,43],[x+s*3,59],[x+s*2,76],[x+s*6,88],[x,93],[x-s*3,88],[x-s*4,71]],c.hair,head);
+    line([x,57],[x-s*1,80],1.5,c.hairLight,head);
+  }
   // Sculpted back hair silhouette and individual waves, behind the torso.
   poly([[21,59],[18,47],[20,30],[26,19],[36,10],[48,7],[60,10],[69,17],[76,30],[78,46],[83,57],[78,66],[66,69],[29,68]], c.outline, head);
   poly([[23,58],[22,43],[24,29],[32,18],[44,10],[55,11],[65,17],[72,31],[73,46],[80,57],[74,64],[60,65],[31,64]], c.hair, head);
@@ -196,7 +221,7 @@ function human(g, spec, p, face) {
     poly([[x,33],[x+4,35],[x+3,48],[x+7,58],[x+3,65],[x-3,65],[x+1,58],[x-3,48]], c.hairDark, head);
     line([x+1,40],[x+3,53], 1, c.hairLight, head);
   }
-  // Wavy locks retain the warm, highlighted hair of the reference artwork.
+  // Layered highlights follow each character's pink / dark hair palette.
   for (const [x, direction] of [[24,-1],[73,1]]) {
     poly([[x,37],[x+direction*3,43],[x+direction*2,51],[x+direction*5,58],[x+direction*2,62],[x-direction*5,65],[x-direction*7,62],[x-direction,58],[x-direction*3,51]],c.hairDark,head);
     poly([[x,39],[x+direction,45],[x-direction,52],[x+direction*2,58],[x-direction*4,62],[x-direction*5,61],[x-direction,57],[x-direction*3,49]],c.hairLight,head);
@@ -213,7 +238,7 @@ function human(g, spec, p, face) {
     }
     const [x,y] = joints[2];
     g.polygon([[x-4,y-2],[x+3,y-2],[x+6,y+5],[x+5,y+8],[x-5,y+7]], c.outline);
-    g.polygon([[x-3,y-2],[x+2,y-2],[x+5,y+5],[x+4,y+6],[x-4,y+5]], momo ? c.white : '#d1a184');
+    g.polygon([[x-3,y-2],[x+2,y-2],[x+5,y+5],[x+4,y+6],[x-4,y+5]], momo ? c.white : c.cream);
     if (momo) {
       g.rect(x-3,y-1,6,2,c.seam); g.rect(x-2,y+2,6,1,c.seam); g.rect(x-4,y+5,8,1,c.seam);
     } else { g.line([x-2,y+1],[x+3,y+4],1,c.white); }
@@ -222,16 +247,16 @@ function human(g, spec, p, face) {
   poly([[36,76],[64,76],[momo ? 77 : 66,104],[62,110],[43,110],[momo ? 25 : 35,104]], c.outline, cloth);
   poly([[38,78],[62,78],[momo ? 74 : 64,103],[60,108],[44,108],[momo ? 28 : 37,103]], skirt, cloth);
   for (let i = 0; i < 4; i++) {
-    poly([[39+i*6,83],[41+i*6,84],[38+i*9,106],[35+i*9,105]], i % 2 ? skirtShade : (momo ? c.pinkLight : '#784565'), cloth);
+    poly([[39+i*6,83],[41+i*6,84],[38+i*9,106],[35+i*9,105]], i % 2 ? skirtShade : c.pinkLight, cloth);
   }
   if (momo) {
     poly([[35,86],[39,88],[34,103],[29,102]], '#ffd1d3', cloth);
     poly([[49,84],[52,84],[55,106],[50,108]], '#f6b0be', cloth);
     line([31,104],[44,108],.7,c.pinkDark,cloth);
   } else {
-    poly([[38,85],[52,88],[63,83],[61,90],[49,94],[39,90]], '#794565', cloth);
-    poly([[40,92],[49,93],[62,98],[61,101],[49,97]], '#512b49', cloth);
-    poly([[39,96],[45,100],[49,106],[43,107]], '#895271', cloth);
+    poly([[38,85],[52,88],[63,83],[61,90],[49,94],[39,90]], c.seam, cloth);
+    poly([[40,92],[49,93],[62,98],[61,101],[49,97]], c.outline, cloth);
+    poly([[39,96],[45,100],[49,106],[43,107]], c.cream, cloth);
   }
   poly([[33,59],[42,55],[57,55],[66,60],[64,80],[58,84],[39,83],[32,77]], c.outline);
   poly([[34,61],[43,57],[56,57],[64,61],[62,79],[57,82],[40,81],[34,77]], momo ? c.pink : c.cream);
@@ -243,11 +268,14 @@ function human(g, spec, p, face) {
     line([40,63],[41,79],1,c.seam); line([58,63],[60,84],1,c.seam);
     line([44,64],[49,66],1,c.pinkDark); line([49,66],[55,63],1,c.pinkDark);
     poly([[49,65],[45,67],[49,68],[50,66],[54,68],[54,65]], c.pinkDark);
-    for (let y = 67; y < 87; y += 6) { ellipse(61,y,1.8,1.8,c.gold); ellipse(61,y, .7,.7,c.white); }
+    ellipse(50,68,4,4,c.outline); ellipse(50,68,3,3,c.gold);
+    line([49,69],[51,69],.8,c.outline); ellipse(49,66,1,1,c.white);
     line([44,80],[56,80],1,c.pinkDark); ellipse(54,80,1.5,1.5,c.gold);
   } else {
-    poly([[42,56],[49,61],[54,57],[57,65],[51,64],[57,82],[52,88],[48,65],[43,64]], c.seam);
-    poly([[43,57],[49,62],[53,59],[54,63],[50,64],[55,82],[53,84],[47,63]], c.white);
+    poly([[38,59],[44,57],[56,57],[62,60],[59,69],[51,73],[41,68]],c.skin);
+    line([43,60],[55,61],1.5,c.outline);
+    line([43,64],[51,69],.7,c.gold); line([51,69],[58,63],.7,c.gold);
+    ellipse(51,70,1.7,2.5,c.gold);
     line([36,64],[39,76],1,c.seam); line([61,63],[59,75],1,c.seam);
   }
 
@@ -264,7 +292,7 @@ function human(g, spec, p, face) {
       const dx=b[0]-a[0], dy=b[1]-a[1], len=Math.hypot(dx,dy)||1;
       for (const t of [.25,.7]) {
         const q=lerp(a,b,t), nx=dy/len, ny=-dx/len;
-        g.line([q[0]-nx*3,q[1]-ny*3],[q[0]+nx,q[1]+ny],.7,'#e5d1b3');
+        g.line([q[0]-nx*3,q[1]-ny*3],[q[0]+nx,q[1]+ny],.7,c.seam);
         g.line([q[0]+nx,q[1]+ny],[q[0]+nx*3,q[1]+ny*3],.7,c.white);
       }
     }
@@ -280,12 +308,10 @@ function human(g, spec, p, face) {
       }
       if (!momo) { g.ellipse(...cuff,2,2,c.gold); g.ellipse(...cuff,1,1,c.white); }
     }
-    if (!momo && i === 0) {
+    if (momo) {
       const [x,y] = lerp(joints[1],wrist,.55);
-      g.polygon([[x-3,y-16],[x+7,y-14],[x+7,y+1],[x-3,y-1]],c.outline);
-      g.polygon([[x-2,y-15],[x+6,y-13],[x+6,y],[x-2,y-2]],'#603453');
-      g.line([x+5,y-13],[x+5,y-1],1,c.cream);
-      g.line(wrist,[x+7,y-3],2,c.skin);
+      g.ellipse(x,y,2.5,2,c.pinkDark);
+      for (const dx of [-3,0,3]) g.ellipse(x+dx,y-3,1,1.2,c.pink);
     }
   }
 
@@ -303,7 +329,7 @@ function human(g, spec, p, face) {
     [[[24,25],[30,19],[41,11],[48,10],[39,16],[31,22]],c.hairShine],
     [[[23,33],[31,31],[42,24],[51,17],[57,17],[49,23],[39,30],[29,35]],c.hair],
     [[[23,35],[32,34],[43,28],[49,24],[44,30],[34,37],[24,39]],c.hairLight],
-    [[[31,18],[39,12],[48,9],[56,12],[48,12],[42,14]],'#cf9b78'],
+    [[[31,18],[39,12],[48,9],[56,12],[48,12],[42,14]],c.hairLight],
     [[[59,14],[66,20],[70,29],[69,34],[66,25],[63,20]],c.hairLight],
     [[[21,43],[24,39],[28,39],[25,44],[27,50],[24,55],[22,53],[24,48]],c.hairShine]
   ]) poly(pts,color,head);
@@ -319,8 +345,9 @@ function human(g, spec, p, face) {
   const happy = ['happy','love','excited'].includes(face.expression);
   for (const x of [40,60]) {
     const pt = head(x,36);
-    eye(g,...pt,false,closed,happy);
-    if (!closed && !happy) {
+    const wink = momo && x === 40 && (!face.expression || face.expression === 'idle');
+    eye(g,...pt,false,closed,happy || wink,false,momo ? '#a44378' : '#7661ad');
+    if (!closed && !happy && !wink) {
       line([x-5,32],[x-2,30],.8,c.outline,head);
       line([x+2,30],[x+5,33],.8,c.outline,head);
     }
@@ -334,12 +361,35 @@ function human(g, spec, p, face) {
   } else {
     line([47,47],[50,49],.8,'#af504a',head); line([50,49],[53,47],.8,'#af504a',head);
   }
+  if (momo) {
+    // Cream cat barrette and dark cat charm from the cover illustration.
+    poly([[62,21],[62,15],[66,18],[71,17],[75,14],[76,23],[72,27],[66,26]],c.outline,head);
+    poly([[63,21],[63,17],[66,20],[71,19],[74,17],[74,23],[71,25],[66,24]],c.white,head);
+    ellipse(66,22,1,1,c.pinkDark,head); ellipse(71,22,1,1,c.pinkDark,head);
+    ellipse(69,24,1,1,c.pink,head);
+    poly([[23,32],[23,27],[27,30],[30,29],[33,27],[34,34],[30,37],[25,36]],'#332b40',head);
+    line([25,34],[27,34],.7,c.pinkLight,head);
+    line([24,39],[21,48],1,c.pinkDark,head);
+    poly([[23,38],[18,36],[19,42],[24,40],[28,44],[29,38]],c.pinkDark,head);
+  } else {
+    // Blue earcups, headband, hair clips and a small black ribbon.
+    line([24,27],[27,19],2,c.outline,head);
+    line([27,19],[34,14],2,'#496397',head);
+    for (const x of [22,76]) {
+      ellipse(x,34,5,10,c.outline,head); ellipse(x,34,3.5,8,'#496397',head);
+      line([x-1,29],[x-1,37],1,'#8ac6f4',head);
+    }
+    line([29,26],[36,24],1,c.gold,head);
+    line([30,29],[35,31],1,c.gold,head);
+    poly([[27,19],[22,14],[22,22],[27,21],[33,24],[33,17]],c.outline,head);
+    ellipse(27,20,1.5,1.5,'#496397',head);
+  }
 }
 
 function critter(g, spec, p, face) {
   const cat = spec.id === 'mochi';
-  const fur = cat ? '#fff0d4' : '#ffa632', shade = cat ? '#efbf96' : '#d88024';
-  const outline = '#71452e', light = '#fff7df', inner = cat ? '#f6a291' : '#bf6c60';
+  const fur = cat ? '#fff0ed' : '#dfa064', shade = cat ? '#efa7c0' : '#ad6b40';
+  const outline = cat ? '#96556f' : '#65402f', light = '#fff5e5', inner = cat ? '#ec8eae' : '#bb7c63';
   const at = (x,y) => [x+p.x+p.lean*(134-y)/60,y+p.y+p.breathe*(134-y)/60];
   const head = (x,y) => { const a = at(55+(x-55)*1.08,10+(y-10)*(1-(p.bow||0)*.14)+3); return [a[0]+p.head*(y-65)/35,a[1]+p.head*.4]; };
   const poly = (pts,color,fn=at) => g.polygon(pts.map(v=>fn(...v)),color);
@@ -354,7 +404,7 @@ function critter(g, spec, p, face) {
   for (let i=1;cat && i<tail.length-1;i++) {
     const [x,y]=tail[i];
     poly([[x-6,y-3],[x-9,y-5],[x-8,y+1],[x-10,y+4],[x-5,y+6],[x-3,y+2]],light);
-    poly([[x+2,y-5],[x+5,y-2],[x+4,y+3],[x+7,y+6],[x+2,y+4],[x,y]],cat?'#ffdab3':shade);
+    poly([[x+2,y-5],[x+5,y-2],[x+4,y+3],[x+7,y+6],[x+2,y+4],[x,y]],cat?'#ffd1e0':shade);
   }
   if(!cat) {
     // Shiba's compact curled tail has an orange centre and a cream outer rim.
@@ -364,8 +414,8 @@ function critter(g, spec, p, face) {
   ell(53,106,26,31,outline); ell(53,105,24,30,fur); ell(56,100,17,24,light);
   if(cat) {
     for(const [x,y,s] of [[34,91,1],[42,102,-1],[31,114,1],[64,101,-1],[66,120,1],[51,124,-1]]) {
-      poly([[x,y],[x+3*s,y+3],[x+s,y+7],[x+5*s,y+9],[x+4*s,y+13],[x-s,y+9],[x-2*s,y+4]],'#f5c49c');
-      poly([[x+2,y-2],[x+6,y],[x+5,y+5],[x+8,y+7],[x+2,y+6]],'#ffdfb8');
+      poly([[x,y],[x+3*s,y+3],[x+s,y+7],[x+5*s,y+9],[x+4*s,y+13],[x-s,y+9],[x-2*s,y+4]],shade);
+      poly([[x+2,y-2],[x+6,y],[x+5,y+5],[x+8,y+7],[x+2,y+6]],'#ffdae7');
     }
   } else {
     poly([[30,93],[35,90],[37,100],[34,110],[38,122],[32,120],[29,110]],shade);
@@ -403,18 +453,27 @@ function critter(g, spec, p, face) {
     for(let k=-1;k<=1;k++) g.rect(x+k*3-1,y,2,3,cat?inner:shade);
     if(cat && i===1) g.ellipse(x,y-2,2.5,2,inner);
   }
-  // Pointed ears and fluffy cheek contour match the cat / shiba references.
+  // The reference cat has pointed ears; Coco has soft, hanging brown ears.
+  if (cat) {
   poly([[25,43],[20,15],[26,12],[42,29],[62,25],[76,7],[82,10],[85,40],[91,53],[87,69],[75,79],[47,83],[27,73],[20,60]],outline,head);
   poly([[27,42],[23,17],[27,16],[43,33],[63,29],[77,11],[80,13],[82,41],[88,54],[84,67],[73,76],[48,80],[30,71],[23,59]],fur,head);
   poly([[27,20],[29,37],[39,35]],light,head); poly([[77,15],[67,32],[80,37]],light,head);
   poly([[28,23],[30,34],[35,33]],inner,head); poly([[76,21],[71,31],[78,33]],inner,head);
+  } else {
+    ell(55,46,32,30,outline,head); ell(55,46,30,28,fur,head);
+    for (const [x,s] of [[29,-1],[78,1]]) {
+      poly([[x,24],[x+s*9,27],[x+s*15,53],[x+s*11,65],[x+s*3,67],[x-s*4,57],[x-s*3,37]],outline,head);
+      poly([[x,28],[x+s*6,30],[x+s*12,53],[x+s*9,62],[x+s*4,63],[x-s*1,55],[x-s*1,37]],shade,head);
+      line([x+s*3,34],[x+s*8,54],2,fur,head);
+    }
+  }
   ell(56,54,29,24,fur,head); ell(56,66,24,14,light,head);
   if(cat) {
     // Uneven cheek tufts and layered peach patches are essential to Mochi's
     // long-haired silhouette; they move with the face, not a bitmap layer.
     for(const [x,y,s] of [[26,48,-1],[25,59,-1],[29,69,-1],[84,44,1],[86,56,1],[81,68,1]]) {
       poly([[x,y-4],[x+s*7,y-2],[x+s*3,y+1],[x+s*8,y+3],[x+s*2,y+7],[x-s*3,y+5]],fur,head);
-      poly([[x,y],[x+s*5,y+2],[x+s,y+4],[x-s*3,y+2]],'#ffdbb6',head);
+      poly([[x,y],[x+s*5,y+2],[x+s,y+4],[x-s*3,y+2]],'#ffd5e4',head);
     }
     for(let i=0;i<6;i++) {
       const x=29+i*9;
@@ -423,21 +482,22 @@ function critter(g, spec, p, face) {
     }
     for(let i=0;i<5;i++) poly([[34+i*8,86+i%2*5],[37+i*8,93],[35+i*8,100],[40+i*8,97],[39+i*8,87]],shade);
     for(const [x,y] of [[30,47],[78,45],[28,66],[78,64],[39,74],[67,75]]) {
-      poly([[x,y],[x+3,y+2],[x+1,y+5],[x+5,y+3],[x+6,y+8],[x-1,y+5]],'#ffd7b2',head);
+      poly([[x,y],[x+3,y+2],[x+1,y+5],[x+5,y+3],[x+6,y+8],[x-1,y+5]],'#ffd5e4',head);
     }
-    poly([[47,37],[50,41],[48,47],[52,45],[55,48],[54,40]],'#ffdab5',head);
+    poly([[47,37],[50,41],[48,47],[52,45],[55,48],[54,40]],'#ffd5e4',head);
     poly([[59,33],[57,38],[61,42],[64,38],[62,39]],shade,head);
-    poly([[31,35],[34,29],[36,37],[42,40],[39,44],[35,40]],'#ffdab5',head);
+    poly([[31,35],[34,29],[36,37],[42,40],[39,44],[35,40]],'#ffd5e4',head);
     poly([[65,42],[70,36],[74,38],[70,43],[72,47],[68,47]],light,head);
-    poly([[42,72],[48,75],[53,74],[56,78],[67,73],[65,79],[54,82],[46,79]],'#eeb68f',head);
+    poly([[42,72],[48,75],[53,74],[56,78],[67,73],[65,79],[54,82],[46,79]],shade,head);
   } else {
-    poly([[45,33],[57,31],[65,35],[58,36],[55,43],[51,38]],shade,head);
+    poly([[51,22],[59,23],[58,39],[63,51],[59,63],[49,64],[51,48],[49,36]],light,head);
     ell(41,43,4,2.5,light,head); ell(70,41,4,2.5,light,head);
     poly([[27,54],[34,51],[37,59],[48,62],[53,67],[46,76],[33,70]],light,head);
     poly([[72,55],[78,48],[85,52],[82,65],[70,73],[61,74],[64,64]],light,head);
   }
   const closed=face.blink||face.expression==='sleepy', happy=['happy','love','excited'].includes(face.expression);
   eye(g,...head(41,53),cat,closed,happy,!cat); eye(g,...head(69,50),cat,closed,happy,!cat);
+  for (const x of [33,77]) ell(x,62,4,2.5,cat?'#f6acc7':'#efa48e',head);
   poly([[52,60],[59,59],[57,63],[54,63]],cat?'#d77e70':'#33231c',head);
   line([55,63],[55,66],1,outline,head);
   line([55,66],[50,69],1,outline,head); line([50,69],[46,66],1,outline,head);
@@ -448,19 +508,15 @@ function critter(g, spec, p, face) {
   }
   if(cat) {
     for(let i=0;i<3;i++) { line([33,63+i*3],[22,60+i*5],.8,'#fffdf4',head); line([75,60+i*3],[89,56+i*5],.8,'#fffdf4',head); }
+    poly([[31,39],[24,35],[24,43],[31,41],[37,45],[37,36]],'#ce729a',head);
+    ell(31,40,2,2,'#f8b8d1',head);
   } else {
-    // Red patterned bandana, gold ring and harness are part of the model.
-    line([34,81],[73,88],3,'#752728'); line([34,81],[73,88],1.7,'#d72737');
-    poly([[55,83],[80,79],[78,99],[66,94]],'#802631');
-    poly([[58,84],[78,81],[76,96],[67,92]],'#e62c3d');
-    for(let i=0;i<3;i++) {
-      line([64+i*5,85+i*2],[61+i*5,88+i*2],1,light);
-      line([61+i*5,88+i*2],[64+i*5,90+i*2],1,light);
-    }
-    poly([[78,81],[82,76],[88,77],[91,83],[86,82],[85,87]],'#c9142e');
-    line([82,79],[86,79],1,light); line([86,79],[86,82],1,light);
-    line([39,94],[66,112],3,'#503027'); line([39,94],[66,112],1.5,'#c93035');
-    ell(43,97,3,4,'#e9bc48'); ell(43,97,1.5,2,'#503027');
+    // Dark ribbon and fresh green sprout on Coco's head.
+    poly([[60,22],[48,15],[47,24],[60,27],[72,30],[76,20],[65,21]],'#272335',head);
+    ell(61,24,3,3,'#42364c',head);
+    line([61,22],[62,14],1,'#64853a',head);
+    poly([[62,17],[55,17],[51,12],[57,11],[63,15]],'#8dbb4e',head);
+    poly([[62,16],[65,11],[71,11],[69,15]],'#acd266',head);
   }
 }
 

@@ -20,18 +20,19 @@
   @media (max-width: 700px) { body { padding: 12px; } main { grid-template-columns: 1fr; } img, canvas { height: 300px; } }
 </style>
 <h1>像素角色動作對照</h1>
-<p>左側為 v2 原圖，右側為可動模型。選擇動作後四個角色同步播放；暫停可檢查每一個姿勢。</p>
+<p>依照 ClawMate 參考圖重畫：粉色小桃、黑衣艾莉亞、白粉麻糬貓與垂耳可可。選擇動作後四個角色同步播放；暫停可檢查每一個姿勢。</p>
+<figure><img src="./assets/artwork/clawmate.png" alt="ClawMate 四個角色的造型參考圖"><figcaption>造型參考</figcaption></figure>
 <div class="controls" id="actions"></div>
 <div class="controls"><button id="pause">暫停</button><label>動作進度 <input id="scrub" type="range" min="0" max="100" value="0"></label></div>
 <main id="cast"></main>
 <script type="module">
 import { CHARACTERS } from './js/characters.js';
-import { ACTIONS, WIDTH, HEIGHT, drawModel, poseAt } from './js/pixel-model.js?v=26';
+import { ACTIONS, WIDTH, HEIGHT, drawModel, poseAt } from './js/pixel-model.js?v=27';
 const labels = { idle: '待機', wave: '揮手', dance: '跳舞', hop: '跳躍', stretch: '伸懶腰', bow: '鞠躬', kick: '踢腿' };
 let action = 'idle', paused = false, started = performance.now(), progress = 0;
 const cast = CHARACTERS.filter(c => c.visible).map(spec => {
   const article = document.createElement('article');
-  article.innerHTML = `<h2>${spec.name['zh-TW'] || spec.name.en}</h2><div class="pair"><figure><img src="./assets/pixel-${spec.id}-v2.png" alt="${spec.name.en} v2 原圖"><figcaption>v2 原圖</figcaption></figure><figure><canvas width="${WIDTH}" height="${HEIGHT}" aria-label="${spec.name.en} 可動模型"></canvas><figcaption>可動模型</figcaption></figure></div>`;
+  article.innerHTML = `<h2>${spec.name['zh-TW'] || spec.name.en}</h2><figure><canvas width="${WIDTH}" height="${HEIGHT}" aria-label="${spec.name.en} 可動模型"></canvas><figcaption>重畫後的可動像素角色</figcaption></figure>`;
   document.querySelector('#cast').append(article);
   const ctx = article.querySelector('canvas').getContext('2d');
   return { spec, ctx, buffer: ctx.createImageData(WIDTH, HEIGHT) };
