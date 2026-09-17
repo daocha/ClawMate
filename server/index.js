@@ -6,7 +6,7 @@ import { WebSocketServer } from 'ws';
 import { getConfig, saveConfig, publicConfig } from './config.js';
 import { sendMessage, testConnection, listAgents } from './openclaw.js';
 import * as push from './push.js';
-import { getCompanions, interact, rewardChat, selectCompanion } from './companions.js';
+import { getCompanions, interact, rewardChat, selectCompanion, pendingNeedAlerts, markNeedAlertsSent, buildAlertNotification, isQuietNow } from './companions.js';
 import { isValidDeviceId, touchDevice } from './devices.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -54,10 +54,14 @@ app.post('/api/companions/select', (req, res) => {
 app.get('/api/settings', (_req, res) => res.json(publicConfig()));
 
 app.put('/api/settings', (req, res) => {
-  const allowed = ['serverUrl', 'token', 'agentId', 'transport', 'gatewayPath', 'sessionId', 'systemPrompt'];
+  const allowed = ['serverUrl', 'token', 'agentId', 'transport', 'gatewayPath', 'sessionId', 'systemPrompt', 'lang', 'dndStart', 'dndEnd'];
   const patch = {};
   for (const key of allowed) if (key in req.body) patch[key] = String(req.body[key] ?? '').trim();
   if (patch.transport && !['openai', 'gateway'].includes(patch.transport)) delete patch.transport;
+  if (patch.lang && !['zh-TW', 'en'].includes(patch.lang)) delete patch.lang;
+  if (patch.dndStart && !/^\d{1,2}:\d{2}$/.test(patch.dndStart)) delete patch.dndStart;
+  if (patch.dndEnd && !/^\d{1,2}:\d{2}$/.test(patch.dndEnd)) delete patch.dndEnd;
+  if ('needAlerts' in req.body) patch.needAlerts = !!req.body.needAlerts;
   saveConfig(patch);
   res.json(publicConfig());
 });
@@ -158,12 +162,28 @@ const heartbeat = setInterval(() => {
 
 wss.on('close', () => clearInterval(heartbeat));
 
+// Watches the active companion's needs/bond for a red-zone dip and pushes a
+// localized notification - but never during the configurable do-not-disturb
+// hours (see server/companions.js isQuietNow/pendingNeedAlerts).
+const needAlertTimer = setInterval(async () => {
+  try {
+    const cfg = getConfig();
+    if (!cfg.needAlerts || isQuietNow()) return;
+    const { pending } = pendingNeedAlerts();
+    if (!pending.length) return;
+    const { title, body } = buildAlertNotification(pending, cfg.lang);
+    const sent = await push.notify({ title, body, tag: 'need-alert' });
+    if (sent) markNeedAlertsSent(pending);
+  } catch { /* best effort - retried on the next tick */ }
+}, 5 * 60_000);
+
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`[ClawMate] listening on http://0.0.0.0:${PORT}`);
 });
 
 const shutdown = () => {
   clearInterval(heartbeat);
+  clearInterval(needAlertTimer);
   wss.clients.forEach((c) => c.close());
   server.close(() => process.exit(0));
   setTimeout(() => process.exit(0), 3000).unref();

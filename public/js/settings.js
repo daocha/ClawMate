@@ -89,6 +89,9 @@ export function initSettings(els, ctx) {
     els.url.value = serverCfg.serverUrl || '';
     els.transport.value = serverCfg.transport || 'openai';
     els.token.placeholder = serverCfg.hasToken ? '••••••••' : '';
+    els.needAlerts.checked = serverCfg.needAlerts !== false;
+    els.dndStart.value = serverCfg.dndStart || '00:00';
+    els.dndEnd.value = serverCfg.dndEnd || '10:00';
     fillAgents([], serverCfg.agentId, null);
     if (serverCfg.configured) loadAgents(serverCfg.agentId);
     return serverCfg;
@@ -103,7 +106,10 @@ export function initSettings(els, ctx) {
           serverUrl: els.url.value.trim(),
           token: els.token.value,
           agentId: els.agent.value.trim(),
-          transport: els.transport.value
+          transport: els.transport.value,
+          needAlerts: els.needAlerts.checked,
+          dndStart: els.dndStart.value || '00:00',
+          dndEnd: els.dndEnd.value || '10:00'
         }
       });
       els.token.value = '';

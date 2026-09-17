@@ -41,7 +41,8 @@
 
   <main class="main">
     <div class="pull-refresh" id="pullRefresh" aria-live="polite" role="status">
-      <span class="pull-icon">↓</span><div><strong id="pullRefreshText" data-i18n="pullToRefresh"></strong><i class="pull-meter"><b></b></i></div>
+      <span class="pull-icon"><svg class="pull-spinner" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/></svg></span>
+      <div><strong id="pullRefreshText" data-i18n="pullToRefresh"></strong><i class="pull-meter"><b></b></i></div>
     </div>
     <!-- ------------------------------------------------------------- pet -->
     <section class="view view-pet" id="view-pet">
@@ -149,6 +150,16 @@
           <label class="toggle"><input type="checkbox" id="setSound"><span data-i18n="soundOn"></span></label>
           <label class="toggle"><input type="checkbox" id="setHaptics" checked><span data-i18n="hapticsOn"></span></label>
           <label class="toggle"><input type="checkbox" id="setMotion"><span data-i18n="reducedMotion"></span></label>
+          <label class="toggle"><input type="checkbox" id="setNeedAlerts" checked><span data-i18n="needAlerts"></span></label>
+          <small data-i18n="needAlertsHelp"></small>
+          <label class="field">
+            <span data-i18n="dndHours"></span>
+            <div class="row-inline">
+              <input id="setDndStart" type="time" value="00:00">
+              <span>–</span>
+              <input id="setDndEnd" type="time" value="10:00">
+            </div>
+          </label>
         </fieldset>
 
         <div class="save-row">

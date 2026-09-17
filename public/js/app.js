@@ -92,6 +92,11 @@ function applyLang(lang) {
   refreshPetLabels();
   renderCompanion();
   buildCharacterGrid();
+  // Keeps red-zone push notifications (sent while the app may be closed) in the
+  // language the user actually reads, since that check runs entirely server-side.
+  fetch(appUrl('api/settings'), {
+    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lang })
+  }).catch(() => {});
 }
 $('langBtn').addEventListener('click', () => applyLang(getLang() === 'zh-TW' ? 'en' : 'zh-TW'));
 
@@ -427,7 +432,7 @@ if ('serviceWorker' in navigator) swReady().catch(() => {});
 const pull = $('pullRefresh');
 const pullText = $('pullRefreshText');
 let pullStart = null;
-const PULL_DISTANCE = 78;
+const PULL_DISTANCE = 220;
 document.querySelector('.main').addEventListener('pointerdown', (event) => {
   if (event.target.closest('input, button, select, .chat-log')) return;
   pullStart = { y: event.clientY, view: app.dataset.view };
@@ -468,7 +473,8 @@ const settings = initSettings(
   {
     url: $('setUrl'), token: $('setToken'), agent: $('setAgent'), transport: $('setTransport'),
     petName: $('setPetName'), push: $('setPush'), sound: $('setSound'), haptics: $('setHaptics'),
-    motion: $('setMotion'), saveBtn: $('saveBtn'), testBtn: $('testBtn'), reloadAgents: $('reloadAgents'),
+    motion: $('setMotion'), needAlerts: $('setNeedAlerts'), dndStart: $('setDndStart'), dndEnd: $('setDndEnd'),
+    saveBtn: $('saveBtn'), testBtn: $('testBtn'), reloadAgents: $('reloadAgents'),
     saveResult: $('saveResult'), testResult: $('testResult'), pushResult: $('pushResult')
   },
   {
