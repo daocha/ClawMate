@@ -89,6 +89,7 @@ async function sendViaOpenAI(cfg, messages, handlers, signal) {
   const base = normalizeBase(cfg.serverUrl);
   const agentId = cfg.agentId || 'main';
   const sessionKey = sessionKeyFor(agentId, cfg.sessionId);
+  await applyPermissionMode(cfg, sessionKey);
 
   const res = await fetch(`${base}/v1/chat/completions`, {
     method: 'POST',
@@ -250,11 +251,28 @@ export async function listAgents(cfg) {
   };
 }
 
+// Pins the session's execution permission tier (read-only/guarded/workspace/full -
+// see OPENCLAW_PERMISSION in .env.example) via `sessions.patch { key, permissionMode }`
+// before every turn, on a separate one-shot connection. Confirmed against a live
+// gateway (protocol v4, OpenClaw 2026.9.2) - `chat.send` itself has no such field,
+// permission is session-scoped state. Best-effort: a failure here must not block
+// the chat turn itself, since a stale/unset mode just falls back to whatever the
+// session (or global/per-agent config) already has.
+async function applyPermissionMode(cfg, sessionKey) {
+  if (!cfg.permission) return;
+  try {
+    await gatewayRequest(cfg, 'sessions.patch', { key: sessionKey, permissionMode: cfg.permission });
+  } catch (err) {
+    console.error(`[ClawMate] failed to set session permissionMode=${cfg.permission}:`, err.message);
+  }
+}
+
 async function sendViaGateway(cfg, text, handlers, signal) {
-  const ws = await openGatewaySocket(cfg);
   const agentId = cfg.agentId || 'main';
   const sessionKey = sessionKeyFor(agentId, cfg.sessionId);
+  await applyPermissionMode(cfg, sessionKey);
 
+  const ws = await openGatewaySocket(cfg);
   try {
     await gatewayHandshake(ws, cfg);
 
@@ -326,15 +344,26 @@ async function sendViaGateway(cfg, text, handlers, signal) {
 
 /* -------------------------------------------------------------- public API */
 
-export async function sendMessage(cfg, { text, history = [] }, handlers = {}, signal) {
+// `persona` is the dynamic per-companion roleplay context built by
+// server/companions.js buildPersonaPrompt() - personality + bond stage +
+// current needs - layered on top of whatever custom systemPrompt is set in
+// Settings, so the pet actually sounds like itself instead of a generic agent.
+export async function sendMessage(cfg, { text, history = [], persona = '' }, handlers = {}, signal) {
   if (!normalizeBase(cfg.serverUrl)) throw new Error('OpenClaw URL is not configured');
 
   if (cfg.transport === 'gateway') {
-    return sendViaGateway(cfg, text, handlers, signal);
+    // The Gateway protocol has no system-role slot, so there is nowhere to put
+    // this except the message text itself. Caller (server/index.js) decides
+    // when `persona` is non-empty - typically only right after a new session
+    // or a companion switch, relying on the Gateway session's own memory to
+    // retain the persona for the rest of the conversation.
+    const primed = persona ? `${persona}\n\n${text}` : text;
+    return sendViaGateway(cfg, primed, handlers, signal);
   }
 
+  const systemContent = [cfg.systemPrompt, persona].filter(Boolean).join('\n\n');
   const messages = [
-    ...(cfg.systemPrompt ? [{ role: 'system', content: cfg.systemPrompt }] : []),
+    ...(systemContent ? [{ role: 'system', content: systemContent }] : []),
     ...history.slice(-12).map((m) => ({ role: m.role, content: m.text })),
     { role: 'user', content: text }
   ];

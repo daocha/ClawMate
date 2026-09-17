@@ -6,6 +6,15 @@
 export const WIDTH = 128;
 export const HEIGHT = 164;
 export const ACTIONS = ['wave', 'dance', 'hop', 'stretch', 'bow', 'kick'];
+// Idle/tap reactions favor different moves per personality, so the same
+// gesture reads differently depending on who you tapped - lively characters
+// dance and hop more, calmer ones stretch and bow more.
+const ACTION_WEIGHTS = {
+  momo: { wave: 1, dance: 1.5, hop: 1.3, stretch: 0.6, bow: 0.8, kick: 0.6 },
+  aria: { wave: 0.8, dance: 0.5, hop: 0.6, stretch: 1.4, bow: 1.4, kick: 0.4 },
+  mochi: { wave: 0.7, dance: 0.8, hop: 1.1, stretch: 1.3, bow: 0.6, kick: 0.9 },
+  coco: { wave: 1.1, dance: 1.2, hop: 1.6, stretch: 0.6, bow: 0.5, kick: 1.4 }
+};
 const TAU = Math.PI * 2;
 const mix = (a, b, t) => a + (b - a) * t;
 const lerp = (a, b, t) => [mix(a[0], b[0], t), mix(a[1], b[1], t)];
@@ -571,7 +580,20 @@ export class PixelAnimator {
   }
   randomAction() {
     const choices=ACTIONS.filter(name=>name!==this.lastAction);
-    this.lastAction=choices[Math.floor(Math.random()*choices.length)];
+    const weights=ACTION_WEIGHTS[this.spec?.id];
+    let pick;
+    if (weights) {
+      const total=choices.reduce((sum,name)=>sum+(weights[name]??1),0);
+      let roll=Math.random()*total;
+      pick=choices[choices.length-1];
+      for (const name of choices) {
+        roll-=weights[name]??1;
+        if (roll<=0) { pick=name; break; }
+      }
+    } else {
+      pick=choices[Math.floor(Math.random()*choices.length)];
+    }
+    this.lastAction=pick;
     this.play(this.lastAction);
     return this.lastAction;
   }

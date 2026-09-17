@@ -5,7 +5,7 @@ const DICT = {
     appName: 'ClawMate 伴靈',
     tabPet: '寵物', tabChat: '聊天', tabSettings: '設定',
     theme: '主題', themeLight: '淺色', themeDark: '深色', themeAuto: '跟隨系統',
-    language: '語言', refresh: '刷新頁面',
+    language: '語言', refresh: '刷新頁面', more: '更多',
     character: '角色', artStyle: '畫風', styleHd: 'HD', styleChibi: 'Q 版', styleCartoon: '卡通版', stylePixel: '像素版',
     pickCharacter: '切換陪伴角色', careMenu: '互動', switchCharacter: '切換角色',
     selectThisCharacter: '選擇此角色', currentCharacter: '目前選定的角色', cancel: '取消', confirmSwitch: '確認切換', switchConfirmTitle: '確認切換角色？', enlargePreview: '放大查看角色預覽',
@@ -59,13 +59,17 @@ const DICT = {
     reactPet: '好舒服～', reactPoke: '欸！', reactSwipe: '哇啊～', reactHug: '最喜歡你了！',
     reactFeed: '好好吃！', reactSleep: 'Zzz…',
     pairingTitle: '這台裝置尚未配對', pairingHint: '請在執行 ClawMate 的電腦終端機輸入下面指令來核准這台裝置：',
-    pairingCopy: '複製指令', pairingCopied: '已複製！', pairingWaiting: '等待核准中，核准後會自動繼續…'
+    pairingCopy: '複製指令', pairingCopied: '已複製！', pairingWaiting: '等待核准中，核准後會自動繼續…',
+    tierUpTitle: '親密度提升！', tierUpBody: '你們的關係進入了「{tier}」階段！', tierUpOk: '太棒了！',
+    tierStage: '關係階段：{tier}',
+    achievements: '成就', achievementsHint: '透過互動、聊天與小遊戲解鎖成就吧！', achievementUnlocked: '解鎖成就：{title}',
+    lockedAchievement: '尚未解鎖'
   },
   en: {
     appName: 'ClawMate',
     tabPet: 'Pet', tabChat: 'Chat', tabSettings: 'Settings',
     theme: 'Theme', themeLight: 'Light', themeDark: 'Dark', themeAuto: 'System',
-    language: 'Language', refresh: 'Refresh page',
+    language: 'Language', refresh: 'Refresh page', more: 'More',
     character: 'Character', artStyle: 'Art style', styleHd: 'Photoreal', styleChibi: 'Chibi', styleCartoon: 'Cartoon', stylePixel: 'Pixel',
     pickCharacter: 'Switch companion', careMenu: 'Care', switchCharacter: 'Switch',
     selectThisCharacter: 'Choose this character', currentCharacter: 'Current companion', cancel: 'Cancel', confirmSwitch: 'Confirm switch', switchConfirmTitle: 'Switch companion?', enlargePreview: 'Enlarge character preview',
@@ -119,7 +123,11 @@ const DICT = {
     reactPet: 'So cosy~', reactPoke: 'Hey!', reactSwipe: 'Whoaa~', reactHug: 'I love you!',
     reactFeed: 'Yummy!', reactSleep: 'Zzz…',
     pairingTitle: 'This device is not paired yet', pairingHint: 'Run this command in a terminal on the computer running ClawMate to approve it:',
-    pairingCopy: 'Copy command', pairingCopied: 'Copied!', pairingWaiting: 'Waiting for approval — this will continue automatically once approved…'
+    pairingCopy: 'Copy command', pairingCopied: 'Copied!', pairingWaiting: 'Waiting for approval — this will continue automatically once approved…',
+    tierUpTitle: 'Your bond just leveled up!', tierUpBody: 'Your relationship reached the "{tier}" stage!', tierUpOk: 'Yay!',
+    tierStage: 'Bond stage: {tier}',
+    achievements: 'Achievements', achievementsHint: 'Unlock badges by interacting, chatting and playing mini-games!', achievementUnlocked: 'Achievement unlocked: {title}',
+    lockedAchievement: 'Not yet unlocked'
   }
 };
 
