@@ -172,7 +172,7 @@ function gatewayHandshake(ws, cfg) {
       params: {
         minProtocol: 4,
         maxProtocol: 4,
-        client: { id: 'clawmate', version: '1.0.0', platform: 'node', mode: 'backend' },
+        client: { id: 'gateway-client', version: '1.0.0', platform: 'node', mode: 'backend' },
         role: 'operator',
         scopes: ['operator.read', 'operator.write'],
         auth: cfg.token ? { token: cfg.token } : {}
