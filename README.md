@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="public/assets/artwork/readme-hero.png" alt="A cute cream-and-peach kitten looking at a heart chat bubble in a pastel sunrise" width="100%">
+  <img src="public/assets/artwork/readme-hero-latest.png" alt="ClawMate Banner" width="100%">
 </p>
 
 # ClawMate (伴靈)
