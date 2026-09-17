@@ -1,4 +1,5 @@
 import { t, getLang } from './i18n.js';
+import { appWebSocketUrl } from './urls.js';
 
 /* ------------------------------------------------------------ socket */
 
@@ -12,8 +13,7 @@ export class PetSocket extends EventTarget {
 
   connect() {
     this.closedByUs = false;
-    const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-    const ws = new WebSocket(`${proto}://${location.host}/ws`);
+    const ws = new WebSocket(appWebSocketUrl('ws'));
     this.ws = ws;
     this.emit('state', { state: this.retry ? 'reconnecting' : 'connecting' });
 

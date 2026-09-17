@@ -1,5 +1,5 @@
 import { CHARACTERS, getCharacter } from './characters.js';
-import { renderHD } from './render-hd.js';
+import { renderReal } from './render-real.js';
 import { renderChibi } from './render-chibi.js';
 import { renderPixel } from './render-pixel.js';
 import { Pet } from './pet.js';
@@ -30,7 +30,7 @@ if (!['hd', 'chibi', 'pixel'].includes(artStyle)) artStyle = 'hd';
 function renderCharacter(spec) {
   if (artStyle === 'pixel') return renderPixel(spec);
   if (artStyle === 'chibi') return renderChibi(spec);
-  return renderHD(spec);
+  return renderReal(spec);
 }
 
 /* ------------------------------------------------------------------ theme */

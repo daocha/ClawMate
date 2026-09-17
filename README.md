@@ -6,7 +6,7 @@ agent, with streaming replies and optional push notifications.
 
 ## Features
 
-- HD realistic, restrained chibi, and pixel-art character styles with touch interactions (tap, swipe, long-press)
+- Photorealistic HD portraits and animals, detailed species-specific Q art, and pixel-art character styles with touch interactions (tap, swipe, long-press)
 - Mood/energy stats that react to how you play with the pet
 - AI chat over an OpenClaw Gateway, via either transport:
   - **OpenAI-compatible** (`/v1/chat/completions`, SSE streaming) — recommended, most reliable
@@ -23,6 +23,19 @@ npm install
 ./start.sh          # starts on http://localhost:8080
 ./stop.sh
 ```
+
+### Tailscale Serve under a path
+
+ClawMate detects its URL prefix automatically, so it can be mounted below a
+shared Tailscale Serve hostname. For the default port used by `start.sh`:
+
+```bash
+tailscale serve --bg --https=443 --set-path=/clawmate http://127.0.0.1:2050
+```
+
+Open the exact URL with its trailing slash:
+`https://<machine>.<tailnet>.ts.net/clawmate/`. API, WebSocket, PWA, and push
+notification URLs will all remain under `/clawmate/`.
 
 `start.sh` is idempotent — it stops any previous instance of the app (matched by command
 and working directory) before starting a fresh one, and waits for `/api/health` before

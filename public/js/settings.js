@@ -1,7 +1,8 @@
 import { t } from './i18n.js';
+import { appUrl } from './urls.js';
 
 const api = async (url, options) => {
-  const res = await fetch(url, {
+  const res = await fetch(appUrl(url), {
     headers: { 'Content-Type': 'application/json' },
     ...options,
     body: options?.body ? JSON.stringify(options.body) : undefined

@@ -170,6 +170,13 @@ html[data-theme="dark"] .ico-moon { display: block; }
 }
 .stage.is-held .pet-host { transition: transform .06s linear; }
 .pet-svg { width: 100%; height: 100%; overflow: visible; }
+.pet-svg--real { isolation: isolate; }
+.pet-svg--real .pet-photo { filter: drop-shadow(0 18px 20px rgba(24, 18, 22, .16)); }
+.pet-svg--real .pet-root { transform-origin: 50% 88%; }
+.pet-svg--real .pet-photo--portrait { filter: drop-shadow(0 20px 24px rgba(24, 18, 22, .2)); }
+.pet-svg--chibi { isolation: isolate; }
+.pet-svg--chibi .pet-chibi-art { filter: drop-shadow(0 16px 18px rgba(24, 18, 22, .15)); }
+.pet-svg--chibi .pet-root { transform-origin: 50% 90%; }
 
 .pet-fx { position: absolute; inset: 0; pointer-events: none; }
 
@@ -432,6 +439,8 @@ html[data-theme="dark"] .ico-moon { display: block; }
 .char-card:active { transform: scale(.94); }
 .char-card.is-on { border-color: var(--accent); box-shadow: 0 0 0 4px var(--tap); }
 .char-card svg { width: 100%; height: 66px; display: block; }
+.char-card .pet-svg--real .pet-photo { filter: drop-shadow(0 8px 8px rgba(24, 18, 22, .14)); }
+.char-card .pet-svg--chibi .pet-chibi-art { filter: drop-shadow(0 7px 7px rgba(24, 18, 22, .13)); }
 .char-card b { display: block; font-size: 12px; margin-top: 4px; font-weight: 600; }
 .char-card span { display: block; font-size: 10px; color: var(--text-dim); }
 

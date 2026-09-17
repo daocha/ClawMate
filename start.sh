@@ -12,7 +12,7 @@ LOG_FILE="$LOG_DIR/app.log"
 MODE="node"
 
 [ -f .env ] && set -a && . ./.env && set +a
-PORT="${PORT:-8080}"
+PORT="${PORT:-2050}"
 
 for arg in "$@"; do
   case "$arg" in
