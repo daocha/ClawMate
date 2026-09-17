@@ -223,7 +223,13 @@ function paintHumanoid(body, head, spec, p) {
     body.rect(14, 17, 4, 2, p.skin);
 
     head.ellipse(16, 12, 9.5, 10, p.hairDark);
-    head.rect(5, 13, 3, 13, p.hairDark); head.rect(24, 13, 3, 13, p.hairDark);
+    if (spec.hair === 'high-ponytail') {
+      head.ellipse(26, 12, 3.5, 8, p.hairDark);
+      head.rect(25, 17, 3, 8, p.hairDark);
+      head.rect(24, 6, 3, 3, p.accent);
+    } else {
+      head.rect(5, 13, 3, 13, p.hairDark); head.rect(24, 13, 3, 13, p.hairDark);
+    }
     head.ellipse(16, 14, 7, 7.5, p.skin);
     head.ellipse(16, 7, 8.5, 4, p.hair);
     head.rect(7, 8, 2, 8, p.hair); head.rect(23, 8, 2, 8, p.hair);

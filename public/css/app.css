@@ -457,6 +457,12 @@ html[data-theme="dark"] .ico-moon { display: block; }
   .stage { max-height: 380px; }
 }
 
+@media (max-width: 430px) {
+  .quickbar { gap: 6px; }
+  .chip { padding-inline: 12px; }
+  .seg-btn { padding-inline: 9px; font-size: 12px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }

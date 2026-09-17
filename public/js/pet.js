@@ -1,4 +1,5 @@
 import { renderHD } from './render-hd.js';
+import { renderChibi } from './render-chibi.js';
 import { renderPixel } from './render-pixel.js';
 import { mouthPath, EXPRESSIONS, BROW_POSE } from './face.js';
 
@@ -27,7 +28,11 @@ export class Pet {
   mount(spec, mode) {
     this.spec = spec;
     this.mode = mode;
-    const svg = mode === 'pixel' ? renderPixel(spec) : renderHD(spec);
+    const svg = mode === 'pixel'
+      ? renderPixel(spec)
+      : mode === 'chibi'
+        ? renderChibi(spec)
+        : renderHD(spec);
     const host = this.stage.querySelector('.pet-host') || (() => {
       const d = document.createElement('div');
       d.className = 'pet-host';

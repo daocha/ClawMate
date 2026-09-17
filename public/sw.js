@@ -1,8 +1,8 @@
-const CACHE = 'clawmate-v2';
+const CACHE = 'clawmate-v3';
 const SHELL = [
   './', './index.html', './css/app.css', './manifest.webmanifest',
   './js/app.js', './js/pet.js', './js/chat.js', './js/settings.js', './js/i18n.js',
-  './js/characters.js', './js/face.js', './js/render-hd.js', './js/render-pixel.js', './js/interactions.js',
+  './js/characters.js', './js/face.js', './js/render-hd.js', './js/render-chibi.js', './js/render-pixel.js', './js/interactions.js',
   './icons/icon.svg', './icons/icon-192.png', './icons/icon-512.png'
 ];
 

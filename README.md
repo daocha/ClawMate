@@ -6,7 +6,7 @@ agent, with streaming replies and optional push notifications.
 
 ## Features
 
-- HD and pixel-art character styles with touch interactions (tap, swipe, long-press)
+- HD realistic, restrained chibi, and pixel-art character styles with touch interactions (tap, swipe, long-press)
 - Mood/energy stats that react to how you play with the pet
 - AI chat over an OpenClaw Gateway, via either transport:
   - **OpenAI-compatible** (`/v1/chat/completions`, SSE streaming) — recommended, most reliable

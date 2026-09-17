@@ -1,5 +1,6 @@
 import { CHARACTERS, getCharacter } from './characters.js';
 import { renderHD } from './render-hd.js';
+import { renderChibi } from './render-chibi.js';
 import { renderPixel } from './render-pixel.js';
 import { Pet } from './pet.js';
 import { attachInteractions } from './interactions.js';
@@ -24,6 +25,13 @@ const stage = $('stage');
 
 let currentId = prefs.get('character', 'momo');
 let artStyle = prefs.get('style', 'hd');
+if (!['hd', 'chibi', 'pixel'].includes(artStyle)) artStyle = 'hd';
+
+function renderCharacter(spec) {
+  if (artStyle === 'pixel') return renderPixel(spec);
+  if (artStyle === 'chibi') return renderChibi(spec);
+  return renderHD(spec);
+}
 
 /* ------------------------------------------------------------------ theme */
 function applyTheme(mode) {
@@ -91,7 +99,7 @@ function buildCharacterGrid() {
     const card = document.createElement('button');
     card.className = `char-card${spec.id === currentId ? ' is-on' : ''}`;
     card.dataset.id = spec.id;
-    card.innerHTML = `${artStyle === 'pixel' ? renderPixel(spec) : renderHD(spec)}
+    card.innerHTML = `${renderCharacter(spec)}
       <b>${localized(spec.name)}</b><span>${localized(spec.tagline)}</span>`;
     card.addEventListener('click', () => {
       currentId = spec.id;

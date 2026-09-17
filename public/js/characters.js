@@ -1,17 +1,19 @@
-// Character catalogue. Every entry renders in both `hd` and `pixel` mode.
+// Character catalogue. Every entry renders in `hd`, `chibi`, and `pixel` mode.
 export const CHARACTERS = [
   {
     id: 'momo',
     archetype: 'humanoid',
-    body: 'chibi',
+    body: 'real',
     name: { en: 'Momo', 'zh-TW': '小桃' },
-    tagline: { en: 'Chibi sweetheart', 'zh-TW': 'Q版甜心女孩' },
-    hair: 'twin-tails',
-    eyeStyle: 'sparkle',
+    tagline: { en: 'Bright-hearted fighter', 'zh-TW': '爽朗系格鬥少女' },
+    hair: 'high-ponytail',
+    eyeStyle: 'realistic',
     palette: {
-      skin: '#ffe0cf', skinShade: '#f5c0ab', hair: '#ff7fb2', hairDark: '#d9518a',
-      hairLight: '#ffa8cb', cloth: '#fff4f9', clothDark: '#ffc2dd', accent: '#ff5f9e',
-      iris: '#8a5cf6', irisDark: '#5b2fc9', blush: '#ff9fb8', outline: '#8a5a68'
+      skin: '#f3ccb2', skinLight: '#ffe3d0', skinShade: '#cc9879',
+      lip: '#bc6670', lipDark: '#87424f', browColor: '#493532', lashColor: '#251c1d',
+      hair: '#35282a', hairDark: '#1b1517', hairLight: '#72514b',
+      cloth: '#302d33', clothDark: '#19171d', cloth2: '#f1ebe2', accent: '#a94850',
+      iris: '#7e543e', irisDark: '#3b241c', blush: '#e89b91', outline: '#503b3d'
     }
   },
   {
@@ -19,7 +21,7 @@ export const CHARACTERS = [
     archetype: 'humanoid',
     body: 'tall',
     name: { en: 'Aria', 'zh-TW': '艾莉亞' },
-    tagline: { en: 'Dreamlike heroine', 'zh-TW': '夢幻真人系女主' },
+    tagline: { en: 'Quietly fearless heroine', 'zh-TW': '沉靜果敢的女主角' },
     hair: 'long-straight',
     eyeStyle: 'realistic',
     palette: {
