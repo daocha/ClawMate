@@ -16,6 +16,17 @@ agent, with streaming replies and optional push notifications.
 - Bilingual UI (Traditional Chinese / English), light/dark/auto theme
 - Runs as a plain Node process or via Docker
 
+Pixel mode uses a JavaScript articulated model for Momo, Aria, Mochi and Coco.
+It redraws geometry on a 128 × 164 Canvas pixel grid at 16 frames per second;
+the original PNGs are visual references, not animation layers. A single tap
+immediately chooses a wave, dance, hop, stretch, bow or kick without consecutive
+repeats. Reduced motion keeps facial reactions but disables body animation.
+Animation pauses when the page is hidden and is disposed when changing styles
+or characters. Character cards use a static SVG from the same model.
+
+Run the pixel rendering, gesture and lifecycle checks with
+`node --test scripts/pixel-model.test.js`.
+
 ## Quick start
 
 ```bash

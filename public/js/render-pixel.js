@@ -1,23 +1,10 @@
-// 32x32 pixel-art renderer. Every character has a pixel twin of its HD form.
+import { renderModelPreview } from './pixel-model.js?v=25';
+
+// Legacy catalogue entries retain their 32x32 preview; the four active
+// companions use the detailed articulated model for previews and the stage.
 const SIZE = 32;
 
-const PIXEL_SPRITES = {
-  momo: './assets/pixel-momo-v2.png',
-  aria: './assets/pixel-aria-v2.png',
-  mochi: './assets/pixel-mochi-v2.png',
-  coco: './assets/pixel-coco-v2.png'
-};
-
-function renderPixelSprite(spec, presentation) {
-  const human = spec.archetype === 'humanoid';
-  const cropHuman = human && presentation !== 'full';
-  const viewBox = cropHuman ? '0 0 1000 960' : '0 0 1000 1500';
-  return `<svg class="pet-svg pet-svg--pixel${cropHuman ? ' pet-svg--portrait-crop' : ''}" viewBox="${viewBox}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${spec.name.en}" preserveAspectRatio="xMidYMid meet">
-  <g class="pet-root">
-    <image class="pet-pixel-art" href="${PIXEL_SPRITES[spec.id]}" x="0" y="0" width="1000" height="1500" preserveAspectRatio="xMidYMin meet"/>
-  </g>
-</svg>`;
-}
+export const hasPixelModel = (spec) => ['momo', 'aria', 'mochi', 'coco'].includes(spec.id);
 
 class Grid {
   constructor(size = SIZE) {
@@ -268,7 +255,7 @@ function paintHumanoid(body, head, spec, p) {
 /* ---------------------------------------------------------------- compose */
 
 export function renderPixel(spec, presentation = 'crop') {
-  if (PIXEL_SPRITES[spec.id]) return renderPixelSprite(spec, presentation);
+  if (hasPixelModel(spec)) return renderModelPreview(spec, presentation);
   const p = spec.palette;
   const body = new Grid();
   const head = new Grid();

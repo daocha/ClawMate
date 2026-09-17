@@ -1,6 +1,7 @@
 import { renderReal } from './render-real.js?v=24';
 import { renderChibi } from './render-chibi.js?v=24';
-import { renderPixel } from './render-pixel.js';
+import { renderPixel, hasPixelModel } from './render-pixel.js?v=25';
+import { PixelAnimator, WIDTH, HEIGHT } from './pixel-model.js?v=25';
 import { mouthPath, EXPRESSIONS, BROW_POSE } from './face.js';
 
 const BLINK_MIN = 2400;
@@ -26,9 +27,17 @@ export class Pet {
   }
 
   mount(spec, mode) {
+    this.pixelAnimator?.destroy();
+    this.pixelAnimator = null;
+    clearTimeout(this.holdTimer);
+    clearInterval(this.talkTimer);
+    this.talkTimer = null;
     this.spec = spec;
     this.mode = mode;
-    const svg = mode === 'pixel'
+    const modeled = mode === 'pixel' && hasPixelModel(spec);
+    const svg = modeled
+      ? `<canvas class="pet-pixel-canvas" width="${WIDTH}" height="${HEIGHT}" role="img" aria-label="${spec.name.en}"></canvas>`
+      : mode === 'pixel'
       ? renderPixel(spec)
       : mode === 'chibi'
         ? renderChibi(spec, 'stage')
@@ -41,7 +50,8 @@ export class Pet {
     })();
     host.innerHTML = svg;
     this.host = host;
-    this.svg = host.querySelector('svg, .pet-stage-art');
+    this.svg = host.querySelector('svg, .pet-stage-art, canvas');
+    if (modeled) this.pixelAnimator = new PixelAnimator(this.svg, spec, this.reducedMotion);
     // Raster HD portraits use a native <img>; the remaining SVG styles keep
     // spare aspect-ratio space below the artwork.
     if (this.svg.tagName.toLowerCase() === 'svg') {
@@ -61,6 +71,7 @@ export class Pet {
   }
 
   destroy() {
+    this.pixelAnimator?.destroy();
     clearTimeout(this.blinkTimer);
     clearTimeout(this.holdTimer);
     clearInterval(this.talkTimer);
@@ -69,13 +80,15 @@ export class Pet {
   setReducedMotion(v) {
     this.reducedMotion = !!v;
     this.stage.classList.toggle('is-reduced', this.reducedMotion);
+    this.pixelAnimator?.setReducedMotion(this.reducedMotion);
+    this.scheduleBlink();
   }
 
   /* ------------------------------------------------------------- blinking */
 
   scheduleBlink() {
     clearTimeout(this.blinkTimer);
-    if (this.reducedMotion) return;
+    if (this.reducedMotion || this.pixelAnimator) return;
     const wait = BLINK_MIN + Math.random() * (BLINK_MAX - BLINK_MIN);
     this.blinkTimer = setTimeout(() => {
       this.blink(Math.random() < 0.22);
@@ -106,6 +119,7 @@ export class Pet {
   applyExpression(name) {
     const recipe = EXPRESSIONS[name] || EXPRESSIONS.idle;
     this.expression = name;
+    this.pixelAnimator?.setExpression(name);
 
     this.eyes.forEach((eye) => {
       eye.querySelectorAll('.pet-eye-shape').forEach((shape) => {
@@ -167,6 +181,11 @@ export class Pet {
   /* ------------------------------------------------------------- reactions */
 
   animate(cls, ms = 700) {
+    if (this.pixelAnimator) {
+      const actions = { 'fx-bounce': 'hop', 'fx-shake': 'wave', 'fx-spin': 'dance', 'fx-squish': 'stretch', 'fx-nuzzle': 'bow', 'fx-think': 'wave' };
+      this.pixelAnimator.play(actions[cls] || 'wave');
+      return;
+    }
     if (this.reducedMotion || !this.root) return;
     this.root.classList.remove(cls);
     void this.root.offsetWidth;
@@ -187,23 +206,10 @@ export class Pet {
 
   react(kind, at) {
     this.wake();
-    // Pixel art remains one connected sprite. Touch zones select a different
-    // whole-body reaction instead of pulling independently clipped limbs apart.
-    if (kind === 'poke' && this.mode === 'pixel') {
-      const zone = this.touchZone(at);
-      if (zone === 'head') {
-        this.adjust(+3, 0); this.express('happy', 1500); this.animate('fx-bounce', 620);
-        this.burst('heart', at, 3); this.onReact('reactPet'); return;
-      }
-      if (zone === 'arm') {
-        this.adjust(+2, 0); this.express('excited', 1500); this.animate('fx-spin', 760);
-        this.burst('star', at, 3); this.onReact('reactSwipe'); return;
-      }
-      if (zone === 'feet') {
-        this.adjust(+2, -1); this.express('surprised', 900); this.animate('fx-bounce', 650);
-        this.burst('spark', at, 2); this.onReact('reactPoke'); return;
-      }
-      this.adjust(+3, 0); this.express('happy', 1400); this.animate('fx-squish', 800);
+    if ((kind === 'poke' || kind === 'pet') && this.pixelAnimator) {
+      this.adjust(+3, 0);
+      this.express('happy', 2100);
+      this.pixelAnimator.randomAction();
       this.burst('heart', at, 2); this.onReact('reactPet'); return;
     }
     switch (kind) {
@@ -231,6 +237,7 @@ export class Pet {
   }
 
   sleep() {
+    this.pixelAnimator?.stop();
     this.asleep = true;
     this.stage.classList.add('is-asleep');
     this.applyExpression('sleepy');

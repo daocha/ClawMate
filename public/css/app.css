@@ -198,6 +198,12 @@ html[data-theme="dark"] .ico-moon { display: block; }
 }
 .stage.is-held .pet-host { transition: transform .06s linear; }
 .pet-svg { width: 100%; height: 100%; overflow: visible; }
+.pet-pixel-canvas {
+  display: block; width: 100%; height: 100%;
+  object-fit: contain; object-position: center;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
 .pet-stage-art {
   width: 100%; height: 100%; overflow: hidden;
   display: flex; align-items: flex-start; justify-content: center;
