@@ -1,7 +1,7 @@
 import { renderReal } from './render-real.js?v=24';
 import { renderChibi } from './render-chibi.js?v=24';
-import { renderPixel, hasPixelModel } from './render-pixel.js?v=25';
-import { PixelAnimator, WIDTH, HEIGHT } from './pixel-model.js?v=25';
+import { renderPixel, hasPixelModel } from './render-pixel.js?v=26';
+import { PixelAnimator, WIDTH, HEIGHT } from './pixel-model.js?v=26';
 import { mouthPath, EXPRESSIONS, BROW_POSE } from './face.js';
 
 const BLINK_MIN = 2400;
