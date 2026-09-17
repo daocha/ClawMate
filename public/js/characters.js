@@ -1,41 +1,50 @@
-// Character catalogue. Every entry renders in both `hd` and `pixel` mode.
+// Character catalogue. Every entry renders in `hd`, `chibi`, and `pixel` mode.
 export const CHARACTERS = [
   {
     id: 'momo',
+    visible: true,
     archetype: 'humanoid',
-    body: 'chibi',
+    body: 'real',
     name: { en: 'Momo', 'zh-TW': '小桃' },
-    tagline: { en: 'Chibi sweetheart', 'zh-TW': 'Q版甜心女孩' },
-    hair: 'twin-tails',
-    eyeStyle: 'sparkle',
+    tagline: { en: 'Sweet everyday trendsetter', 'zh-TW': '清純可愛的日常女孩' },
+    companion: { type: 'human', personality: { 'zh-TW': '清純活潑、很在意日常分享與被記得的小事。喜歡一起散步、互傳心情與溫柔的擁抱。', en: 'Sweet and lively; treasures daily sharing and little things you remember. Loves walks, check-ins and gentle hugs.' } },
+    hair: 'soft-bangs',
+    eyeStyle: 'realistic',
     palette: {
-      skin: '#ffe0cf', skinShade: '#f5c0ab', hair: '#ff7fb2', hairDark: '#d9518a',
-      hairLight: '#ffa8cb', cloth: '#fff4f9', clothDark: '#ffc2dd', accent: '#ff5f9e',
-      iris: '#8a5cf6', irisDark: '#5b2fc9', blush: '#ff9fb8', outline: '#8a5a68'
+      skin: '#f3ccb2', skinLight: '#ffe3d0', skinShade: '#cc9879',
+      lip: '#bc6670', lipDark: '#87424f', browColor: '#493532', lashColor: '#251c1d',
+      hair: '#35282a', hairDark: '#1b1517', hairLight: '#72514b',
+      // Shared through HD, chibi and pixel: cream cardigan + blush-pink skirt.
+      cloth: '#f5eee7', clothDark: '#d8c6bf', cloth2: '#f4bcc4', accent: '#d98d9a',
+      iris: '#7e543e', irisDark: '#3b241c', blush: '#e89b91', outline: '#503b3d'
     }
   },
   {
     id: 'aria',
+    visible: true,
     archetype: 'humanoid',
     body: 'tall',
     name: { en: 'Aria', 'zh-TW': '艾莉亞' },
-    tagline: { en: 'Dreamlike heroine', 'zh-TW': '夢幻真人系女主' },
+    tagline: { en: 'Poised, thoughtful confidante', 'zh-TW': '成熟知性的都會女性' },
+    companion: { type: 'human', personality: { 'zh-TW': '成熟沉穩、理性而細膩，重視有內容的交流與被尊重的陪伴。喜歡深度聊天、安靜共讀與有心準備的一餐。', en: 'Mature, calm and perceptive; values meaningful conversation and respectful company. Loves deep talks, quiet reading and a thoughtful meal.' } },
     hair: 'long-straight',
     eyeStyle: 'realistic',
     palette: {
       skin: '#f8d8c0', skinLight: '#ffeade', skinShade: '#d9a888',
       lip: '#d4737a', lipDark: '#a8505c', browColor: '#6e4a43', lashColor: '#3d2a2a', hair: '#4a3436', hairDark: '#2b1d20',
-      hairLight: '#8a6360', cloth: '#332b3d', clothDark: '#1f1a28', cloth2: '#f4ece4',
-      accent: '#c8506a', iris: '#a85a4c', irisDark: '#5c2a26', blush: '#f2a8a4', outline: '#5a4044'
+      hairLight: '#8a6360', cloth: '#f6eee5', clothDark: '#573444', cloth2: '#fffaf2',
+      accent: '#795061', iris: '#a85a4c', irisDark: '#5c2a26', blush: '#f2a8a4', outline: '#5a4044'
     }
   },
   {
     id: 'mochi',
+    visible: true,
     archetype: 'critter',
     ears: 'cat',
     tail: 'cat',
     name: { en: 'Mochi', 'zh-TW': '麻糬貓' },
     tagline: { en: 'Cream kitty', 'zh-TW': '奶油小貓咪' },
+    companion: { type: 'cat', personality: { 'zh-TW': '黏人又有點挑剔，喜歡溫柔的互動。', en: 'Affectionate but a little particular; loves gentle attention.' } },
     eyeStyle: 'round',
     palette: {
       body: '#fff4e2', bodyDark: '#f0d9bd', belly: '#fffdf8', inner: '#ffc2cf',
@@ -45,11 +54,13 @@ export const CHARACTERS = [
   },
   {
     id: 'coco',
+    visible: true,
     archetype: 'critter',
     ears: 'dog',
     tail: 'fluff',
     name: { en: 'Coco', 'zh-TW': '可可柴' },
     tagline: { en: 'Happy shiba', 'zh-TW': '開心小柴犬' },
+    companion: { type: 'dog', personality: { 'zh-TW': '活力滿滿，最期待散步與一起玩。', en: 'Full of energy and always ready for walks and play.' } },
     eyeStyle: 'round',
     palette: {
       body: '#f0a95a', bodyDark: '#d08737', belly: '#fff3e0', inner: '#f5b5a0',

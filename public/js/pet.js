@@ -1,5 +1,7 @@
-import { renderHD } from './render-hd.js';
-import { renderPixel } from './render-pixel.js';
+import { renderReal } from './render-real.js?v=24';
+import { renderChibi } from './render-chibi.js?v=24';
+import { renderPixel, hasPixelModel } from './render-pixel.js?v=25';
+import { PixelAnimator, WIDTH, HEIGHT } from './pixel-model.js?v=25';
 import { mouthPath, EXPRESSIONS, BROW_POSE } from './face.js';
 
 const BLINK_MIN = 2400;
@@ -25,9 +27,21 @@ export class Pet {
   }
 
   mount(spec, mode) {
+    this.pixelAnimator?.destroy();
+    this.pixelAnimator = null;
+    clearTimeout(this.holdTimer);
+    clearInterval(this.talkTimer);
+    this.talkTimer = null;
     this.spec = spec;
     this.mode = mode;
-    const svg = mode === 'pixel' ? renderPixel(spec) : renderHD(spec);
+    const modeled = mode === 'pixel' && hasPixelModel(spec);
+    const svg = modeled
+      ? `<canvas class="pet-pixel-canvas" width="${WIDTH}" height="${HEIGHT}" role="img" aria-label="${spec.name.en}"></canvas>`
+      : mode === 'pixel'
+      ? renderPixel(spec)
+      : mode === 'chibi'
+        ? renderChibi(spec, 'stage')
+        : renderReal(spec, 'stage');
     const host = this.stage.querySelector('.pet-host') || (() => {
       const d = document.createElement('div');
       d.className = 'pet-host';
@@ -36,7 +50,13 @@ export class Pet {
     })();
     host.innerHTML = svg;
     this.host = host;
-    this.svg = host.querySelector('svg');
+    this.svg = host.querySelector('svg, .pet-stage-art, canvas');
+    if (modeled) this.pixelAnimator = new PixelAnimator(this.svg, spec, this.reducedMotion);
+    // Raster HD portraits use a native <img>; the remaining SVG styles keep
+    // spare aspect-ratio space below the artwork.
+    if (this.svg.tagName.toLowerCase() === 'svg') {
+      this.svg.setAttribute('preserveAspectRatio', 'xMidYMin meet');
+    }
     this.root = this.svg.querySelector('.pet-root');
     this.head = this.svg.querySelector('.pet-head');
     this.eyes = [...this.svg.querySelectorAll('.pet-eye')];
@@ -51,6 +71,7 @@ export class Pet {
   }
 
   destroy() {
+    this.pixelAnimator?.destroy();
     clearTimeout(this.blinkTimer);
     clearTimeout(this.holdTimer);
     clearInterval(this.talkTimer);
@@ -59,13 +80,15 @@ export class Pet {
   setReducedMotion(v) {
     this.reducedMotion = !!v;
     this.stage.classList.toggle('is-reduced', this.reducedMotion);
+    this.pixelAnimator?.setReducedMotion(this.reducedMotion);
+    this.scheduleBlink();
   }
 
   /* ------------------------------------------------------------- blinking */
 
   scheduleBlink() {
     clearTimeout(this.blinkTimer);
-    if (this.reducedMotion) return;
+    if (this.reducedMotion || this.pixelAnimator) return;
     const wait = BLINK_MIN + Math.random() * (BLINK_MAX - BLINK_MIN);
     this.blinkTimer = setTimeout(() => {
       this.blink(Math.random() < 0.22);
@@ -96,6 +119,7 @@ export class Pet {
   applyExpression(name) {
     const recipe = EXPRESSIONS[name] || EXPRESSIONS.idle;
     this.expression = name;
+    this.pixelAnimator?.setExpression(name);
 
     this.eyes.forEach((eye) => {
       eye.querySelectorAll('.pet-eye-shape').forEach((shape) => {
@@ -157,6 +181,11 @@ export class Pet {
   /* ------------------------------------------------------------- reactions */
 
   animate(cls, ms = 700) {
+    if (this.pixelAnimator) {
+      const actions = { 'fx-bounce': 'hop', 'fx-shake': 'wave', 'fx-spin': 'dance', 'fx-squish': 'stretch', 'fx-nuzzle': 'bow', 'fx-think': 'wave' };
+      this.pixelAnimator.play(actions[cls] || 'wave');
+      return;
+    }
     if (this.reducedMotion || !this.root) return;
     this.root.classList.remove(cls);
     void this.root.offsetWidth;
@@ -164,8 +193,25 @@ export class Pet {
     setTimeout(() => this.root.classList.remove(cls), ms);
   }
 
+  touchZone(at) {
+    if (!at || !this.svg) return 'body';
+    const box = this.svg.getBoundingClientRect();
+    const x = (at.x - box.left) / box.width;
+    const y = (at.y - box.top) / box.height;
+    if (y < .42) return 'head';
+    if (y > .78) return 'feet';
+    if (x < .24 || x > .76) return 'arm';
+    return 'body';
+  }
+
   react(kind, at) {
     this.wake();
+    if ((kind === 'poke' || kind === 'pet') && this.pixelAnimator) {
+      this.adjust(+3, 0);
+      this.express('happy', 2100);
+      this.pixelAnimator.randomAction();
+      this.burst('heart', at, 2); this.onReact('reactPet'); return;
+    }
     switch (kind) {
       case 'pet':
         this.adjust(+4, 0); this.express('happy', 1800); this.animate('fx-nuzzle', 900);
@@ -191,6 +237,7 @@ export class Pet {
   }
 
   sleep() {
+    this.pixelAnimator?.stop();
     this.asleep = true;
     this.stage.classList.add('is-asleep');
     this.applyExpression('sleepy');

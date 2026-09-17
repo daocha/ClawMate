@@ -163,6 +163,15 @@ function hairBack(uid, spec, p) {
       </g>
     </g>`;
   }
+  if (spec.hair === 'high-ponytail') {
+    return `<g class="pet-hair-back">
+      <ellipse cx="100" cy="76" rx="45" ry="45" fill="url(#${uid}-hair)"/>
+      <g class="pet-hairtail" data-side="r" style="transform-origin:128px 48px">
+        <path d="M121 45 Q159 34 160 74 Q159 108 139 139 Q147 102 132 82 Q119 65 121 45 Z" fill="url(#${uid}-hair)"/>
+        <path d="M143 62 Q150 89 141 116" stroke="${p.hairLight}" stroke-width="3" fill="none" opacity=".34" stroke-linecap="round"/>
+      </g>
+    </g>`;
+  }
   return `<g class="pet-hair-back">
     <path d="M64 54 Q62 16 100 14 Q138 16 136 54 L144 178 Q120 187 100 182 Q80 187 56 178 Z" fill="url(#${uid}-hair)"/>
     <path d="M72 96 Q78 140 74 176" stroke="${p.hairLight}" stroke-width="3.5" fill="none" opacity=".35" stroke-linecap="round"/>
@@ -179,6 +188,15 @@ function hairFront(uid, spec, p) {
         <circle cx="52" cy="62" r="9" fill="${p.accent}"/><circle cx="52" cy="62" r="3.6" fill="#fff" opacity=".75"/>
         <circle cx="148" cy="62" r="9" fill="${p.accent}"/><circle cx="148" cy="62" r="3.6" fill="#fff" opacity=".75"/>
       </g>
+    </g>`;
+  }
+  if (spec.hair === 'high-ponytail') {
+    return `<g class="pet-hair-front">
+      <path d="M68 55 Q69 20 100 17 Q130 20 132 52 Q119 35 106 30 Q97 46 84 33 Q75 39 68 55 Z" fill="url(#${uid}-hair)"/>
+      <path d="M67 47 Q62 69 64 91 Q57 72 62 43 Z" fill="url(#${uid}-hair)"/>
+      <path d="M132 45 Q137 61 135 82 Q142 64 137 40 Z" fill="url(#${uid}-hair)"/>
+      <ellipse cx="126" cy="43" rx="8" ry="6" fill="${p.accent}" opacity=".9"/>
+      <path d="M80 27 Q94 20 108 24" stroke="${p.hairLight}" stroke-width="4" fill="none" opacity=".38" stroke-linecap="round"/>
     </g>`;
   }
   return `<g class="pet-hair-front">
@@ -359,6 +377,7 @@ function realisticMouth(uid, g, p) {
 function buildRealistic(uid, spec) {
   const p = spec.palette;
   const g = GEO.real;
+  const ponytail = spec.hair === 'high-ponytail';
 
   const facePath = `M 100 17
     C 84 17 72 27 71 45
@@ -372,9 +391,13 @@ function buildRealistic(uid, spec) {
   return `<g class="pet-shadow-layer"><ellipse class="pet-shadow" cx="100" cy="212" rx="44" ry="7" fill="#000" opacity=".16"/></g>
 
 <g class="pet-hair-back">
-  <path d="M66 52 C64 20 80 8 100 8 C120 8 136 20 134 52 L140 176 C138 190 128 196 118 193 C112 176 114 120 112 96 L88 96 C86 120 88 176 82 193 C72 196 62 190 60 176 Z" fill="url(#${uid}-hair)"/>
-  <path d="M74 60 C70 100 72 150 76 184" fill="none" stroke="${p.hairLight}" stroke-width="3.2" opacity=".28" stroke-linecap="round"/>
-  <path d="M126 60 C130 100 128 150 124 184" fill="none" stroke="${p.hairLight}" stroke-width="3.2" opacity=".28" stroke-linecap="round"/>
+  ${ponytail
+    ? `<path d="M107 18 C137 13 151 33 144 55 C138 74 128 91 139 126 C145 145 137 170 118 184 C124 151 112 130 116 101 C120 73 133 47 113 34 Z" fill="url(#${uid}-hair)"/>
+       <path d="M66 52 C64 20 80 8 100 8 C120 8 136 20 134 52 L126 105 C117 111 83 111 74 105 Z" fill="url(#${uid}-hair)"/>
+       <path d="M129 45 C138 82 124 116 132 157" fill="none" stroke="${p.hairLight}" stroke-width="3" opacity=".3" stroke-linecap="round"/>`
+    : `<path d="M66 52 C64 20 80 8 100 8 C120 8 136 20 134 52 L140 176 C138 190 128 196 118 193 C112 176 114 120 112 96 L88 96 C86 120 88 176 82 193 C72 196 62 190 60 176 Z" fill="url(#${uid}-hair)"/>
+       <path d="M74 60 C70 100 72 150 76 184" fill="none" stroke="${p.hairLight}" stroke-width="3.2" opacity=".28" stroke-linecap="round"/>
+       <path d="M126 60 C130 100 128 150 124 184" fill="none" stroke="${p.hairLight}" stroke-width="3.2" opacity=".28" stroke-linecap="round"/>`}
 </g>
 
 <g class="pet-body">
@@ -427,6 +450,7 @@ function buildRealistic(uid, spec) {
     <path d="M66 50 C63 70 62 86 65 99 C59 81 59 62 64 45 Z" fill="url(#${uid}-hair)"/>
     <path d="M134 50 C137 70 138 86 135 99 C141 81 141 62 136 45 Z" fill="url(#${uid}-hair)"/>
     <path d="M82 21 C91 15 109 15 118 21" fill="none" stroke="${p.hairLight}" stroke-width="3" opacity=".22" stroke-linecap="round"/>
+    ${ponytail ? `<path d="M77 31 C88 36 104 36 119 27 C111 42 94 48 78 42 Z" fill="${p.hairDark}" opacity=".42"/>` : ''}
   </g>
 </g>`;
 }
@@ -615,13 +639,17 @@ ${tail(uid, spec, p)}
 </g>`;
 }
 
-export function renderHD(spec) {
-  const uid = `hd-${spec.id}`;
+export function renderHD(spec, mode = 'hd') {
+  const chibiMode = mode === 'chibi';
+  const uid = `${chibiMode ? 'chibi' : 'hd'}-${spec.id}`;
+  const renderSpec = chibiMode && spec.archetype === 'humanoid'
+    ? { ...spec, body: 'tall' }
+    : spec;
   const inner = spec.archetype === 'humanoid'
-    ? (spec.body === 'tall' ? buildRealistic(uid, spec) : buildHumanoid(uid, spec))
-    : buildCritter(uid, spec);
-  return `<svg class="pet-svg pet-svg--hd" viewBox="${VIEWBOX}" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true" preserveAspectRatio="xMidYMid meet">
-${defs(uid, spec.palette)}
+    ? (chibiMode ? buildHumanoid(uid, renderSpec) : buildRealistic(uid, renderSpec))
+    : buildCritter(uid, renderSpec);
+  return `<svg class="pet-svg pet-svg--${chibiMode ? 'chibi' : 'hd'}" viewBox="${VIEWBOX}" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true" preserveAspectRatio="xMidYMid meet">
+${defs(uid, renderSpec.palette)}
 <g class="pet-root">${inner}</g>
 </svg>`;
 }

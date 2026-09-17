@@ -11,7 +11,11 @@ const DEFAULTS = {
   transport: 'openai',
   gatewayPath: '',
   sessionId: 'main',
-  systemPrompt: ''
+  systemPrompt: '',
+  lang: 'zh-TW',
+  dndStart: '00:00',
+  dndEnd: '10:00',
+  needAlerts: true
 };
 
 fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -49,6 +53,10 @@ export function publicConfig() {
     gatewayPath: c.gatewayPath,
     sessionId: c.sessionId,
     systemPrompt: c.systemPrompt,
+    lang: c.lang,
+    dndStart: c.dndStart,
+    dndEnd: c.dndEnd,
+    needAlerts: c.needAlerts !== false,
     hasToken: Boolean(c.token),
     configured: Boolean(c.serverUrl)
   };

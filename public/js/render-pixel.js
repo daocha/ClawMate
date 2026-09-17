@@ -1,5 +1,10 @@
-// 32x32 pixel-art renderer. Every character has a pixel twin of its HD form.
+import { renderModelPreview } from './pixel-model.js?v=25';
+
+// Legacy catalogue entries retain their 32x32 preview; the four active
+// companions use the detailed articulated model for previews and the stage.
 const SIZE = 32;
+
+export const hasPixelModel = (spec) => ['momo', 'aria', 'mochi', 'coco'].includes(spec.id);
 
 class Grid {
   constructor(size = SIZE) {
@@ -193,6 +198,7 @@ function paintCritter(body, head, spec, p) {
 
 function paintHumanoid(body, head, spec, p) {
   const chibi = spec.body === 'chibi';
+  const isMomo = spec.id === 'momo';
   if (chibi) {
     body.rect(13, 28, 3, 3, p.skin); body.rect(17, 28, 3, 3, p.skin);
     body.rect(12, 30, 4, 1, p.accent); body.rect(17, 30, 4, 1, p.accent);
@@ -210,20 +216,33 @@ function paintHumanoid(body, head, spec, p) {
     head.ellipse(5, 9, 2, 2, p.accent); head.ellipse(27, 9, 2, 2, p.accent);    // ties
     head.px(12, 5, p.hairLight); head.px(13, 5, p.hairLight);
   } else {
+    // The pixel twins inherit the same outfit anchors as their HD and chibi
+    // counterparts: Momo's cream cardigan/pink skirt versus Aria's ivory
+    // blouse/plum office skirt. That makes the three modes readable as one cast.
+    const skirt = isMomo ? p.accent : p.clothDark;
+    const shoe = isMomo ? '#fffaf5' : p.clothDark;
+    const top = isMomo ? p.cloth2 : p.cloth;
     body.rect(13, 27, 3, 4, p.skin); body.rect(17, 27, 3, 4, p.skin);
-    body.rect(12, 30, 4, 1, p.clothDark); body.rect(17, 30, 4, 1, p.clothDark);
-    body.rect(12, 27, 4, 3, p.clothDark); body.rect(17, 27, 4, 3, p.clothDark);
-    body.tri(11, 27, 21, 27, 16, 21, p.clothDark);
-    body.rect(11, 25, 11, 3, p.clothDark);
-    body.rect(11, 24, 11, 1, p.accent);
-    body.rect(11, 19, 11, 5, p.cloth);
-    body.rect(13, 19, 7, 4, p.cloth2 || p.belly);
+    body.rect(12, 30, 4, 1, shoe); body.rect(17, 30, 4, 1, shoe);
+    body.rect(12, 27, 4, 3, shoe); body.rect(17, 27, 4, 3, shoe);
+    body.tri(11, 27, 21, 27, 16, 21, skirt);
+    body.rect(11, 25, 11, 3, skirt);
+    body.rect(11, 24, 11, 1, isMomo ? p.clothDark : p.accent);
+    body.rect(11, 19, 11, 5, top);
+    body.rect(13, 19, 7, 4, isMomo ? p.cloth2 : (p.cloth2 || p.belly));
     body.rect(14, 19, 5, 1, p.skin);
     body.ellipse(9, 22, 1.5, 4, p.skin); body.ellipse(23, 22, 1.5, 4, p.skin);
+    if (isMomo) { body.rect(10, 19, 2, 5, p.cloth); body.rect(20, 19, 2, 5, p.cloth); }
     body.rect(14, 17, 4, 2, p.skin);
 
     head.ellipse(16, 12, 9.5, 10, p.hairDark);
-    head.rect(5, 13, 3, 13, p.hairDark); head.rect(24, 13, 3, 13, p.hairDark);
+    if (spec.hair === 'high-ponytail') {
+      head.ellipse(26, 12, 3.5, 8, p.hairDark);
+      head.rect(25, 17, 3, 8, p.hairDark);
+      head.rect(24, 6, 3, 3, p.accent);
+    } else {
+      head.rect(5, 13, 3, 13, p.hairDark); head.rect(24, 13, 3, 13, p.hairDark);
+    }
     head.ellipse(16, 14, 7, 7.5, p.skin);
     head.ellipse(16, 7, 8.5, 4, p.hair);
     head.rect(7, 8, 2, 8, p.hair); head.rect(23, 8, 2, 8, p.hair);
@@ -235,7 +254,8 @@ function paintHumanoid(body, head, spec, p) {
 
 /* ---------------------------------------------------------------- compose */
 
-export function renderPixel(spec) {
+export function renderPixel(spec, presentation = 'crop') {
+  if (hasPixelModel(spec)) return renderModelPreview(spec, presentation);
   const p = spec.palette;
   const body = new Grid();
   const head = new Grid();
@@ -253,7 +273,9 @@ export function renderPixel(spec) {
     : { x: 16, y: 18 };
   const headOriginY = spec.archetype === 'humanoid' ? 22 : 21;
 
-  return `<svg class="pet-svg pet-svg--pixel" viewBox="0 0 ${SIZE} ${SIZE}" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true" shape-rendering="crispEdges" preserveAspectRatio="xMidYMid meet">
+  const cropHuman = spec.archetype === 'humanoid' && presentation !== 'full';
+  const viewBox = cropHuman ? `0 0 ${SIZE} 25` : `0 0 ${SIZE} ${SIZE}`;
+  return `<svg class="pet-svg pet-svg--pixel${cropHuman ? ' pet-svg--portrait-crop' : ''}" viewBox="${viewBox}" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true" shape-rendering="crispEdges" preserveAspectRatio="xMidYMid meet">
 <g class="pet-root">
   <g class="pet-shadow-layer"><rect class="pet-shadow" x="8" y="31" width="16" height="1" fill="#000" opacity=".16"/></g>
   <g class="pet-body">${body.toRects()}</g>

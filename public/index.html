@@ -14,7 +14,7 @@
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="./icons/icon-180.png">
-<link rel="stylesheet" href="./css/app.css">
+<link rel="stylesheet" href="./css/app.css?v=25">
 </head>
 <body>
 <div class="app" data-view="pet">
@@ -26,8 +26,8 @@
     </div>
     <div class="topbar-actions">
       <span class="conn" id="conn" data-state="idle"><i></i><span id="connText" data-i18n="disconnected"></span></span>
-      <button class="icon-btn install" id="installBtn" data-i18n-label="install" hidden>
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5v11M12 14.5l-4-4M12 14.5l4-4M4.5 18.5h15" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <button class="icon-btn" id="refreshBtn" data-i18n-label="refresh" data-i18n-title="refresh">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.2 8.4A7.8 7.8 0 1 0 20 13M19.2 4.8v3.9h-3.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
       <button class="icon-btn" id="langBtn" data-i18n-label="language">
         <span id="langLabel">EN</span>
@@ -40,6 +40,10 @@
   </header>
 
   <main class="main">
+    <div class="pull-refresh" id="pullRefresh" aria-live="polite" role="status">
+      <span class="pull-icon"><svg class="pull-spinner" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/></svg></span>
+      <div><strong id="pullRefreshText" data-i18n="pullToRefresh"></strong><i class="pull-meter"><b></b></i></div>
+    </div>
     <!-- ------------------------------------------------------------- pet -->
     <section class="view view-pet" id="view-pet">
       <div class="stage-shell">
@@ -58,9 +62,11 @@
       </div>
 
       <div class="quickbar">
-        <button class="chip" id="pickBtn"><span data-i18n="character"></span></button>
+        <button class="chip" id="careBtn"><span data-i18n="careMenu"></span></button>
+        <button class="chip" id="switchBtn"><span data-i18n="switchCharacter"></span></button>
         <div class="seg" role="group" data-i18n-label="artStyle">
           <button class="seg-btn is-on" data-style="hd" data-i18n="styleHd"></button>
+          <button class="seg-btn" data-style="chibi" data-i18n="styleChibi"></button>
           <button class="seg-btn" data-style="pixel" data-i18n="stylePixel"></button>
         </div>
       </div>
@@ -141,9 +147,18 @@
           </label>
           <small data-i18n="pushHelp"></small>
           <p class="test-result" id="pushResult"></p>
-          <label class="toggle"><input type="checkbox" id="setSound"><span data-i18n="soundOn"></span></label>
           <label class="toggle"><input type="checkbox" id="setHaptics" checked><span data-i18n="hapticsOn"></span></label>
           <label class="toggle"><input type="checkbox" id="setMotion"><span data-i18n="reducedMotion"></span></label>
+          <label class="toggle"><input type="checkbox" id="setNeedAlerts" checked><span data-i18n="needAlerts"></span></label>
+          <small data-i18n="needAlertsHelp"></small>
+          <label class="field">
+            <span data-i18n="dndHours"></span>
+            <div class="row-inline">
+              <input id="setDndStart" type="time" value="00:00">
+              <span>–</span>
+              <input id="setDndEnd" type="time" value="10:00">
+            </div>
+          </label>
         </fieldset>
 
         <div class="save-row">
@@ -180,10 +195,64 @@
       <div class="sheet-grabber"></div>
       <h3 data-i18n="pickCharacter"></h3>
       <div class="char-grid" id="charGrid"></div>
+      <section class="switch-preview" id="switchPreview" hidden>
+        <button class="switch-preview-art" id="switchPreviewArt" type="button" data-i18n-label="enlargePreview"></button>
+        <div class="switch-preview-copy"><h4 id="switchPreviewName"></h4><p id="switchPreviewTag"></p><p id="switchPreviewPersonality"></p></div>
+        <div class="trait-list" id="traitList"></div>
+        <button class="btn primary switch-select-btn" id="selectPreviewBtn" type="button" data-i18n="selectThisCharacter"></button>
+      </section>
     </div>
+  </div>
+  <div class="sheet" id="careSheet" hidden>
+    <div class="sheet-backdrop" data-care-close></div>
+    <div class="sheet-body care-sheet-body">
+      <div class="sheet-grabber"></div>
+      <h3 data-i18n="careMenu"></h3>
+      <section class="companion-panel" id="companionPanel" hidden>
+        <div class="care-affinity"><span data-i18n="statAffinity"></span><b id="affinityValue">—</b><div class="bar"><i id="barAffinity" style="width:0%"></i></div></div>
+        <p class="personality" id="personalityText"></p>
+        <div class="need-grid" id="needGrid"></div>
+        <div class="action-grid" id="actionGrid"></div>
+        <small data-i18n="needDecayHint"></small>
+      </section>
+    </div>
+  </div>
+  <div class="app-modal" id="switchModal" hidden role="dialog" aria-modal="true" aria-labelledby="switchModalTitle">
+    <div class="app-modal-backdrop" data-switch-cancel></div>
+    <section class="app-modal-card">
+      <span class="modal-icon">♥</span>
+      <h3 id="switchModalTitle" data-i18n="switchConfirmTitle"></h3>
+      <p id="switchModalText"></p>
+      <div class="modal-actions"><button class="btn ghost" type="button" data-switch-cancel data-i18n="cancel"></button><button class="btn primary" type="button" id="confirmSwitchBtn" data-i18n="confirmSwitch"></button></div>
+    </section>
+  </div>
+  <div class="app-modal" id="newSessionModal" hidden role="dialog" aria-modal="true" aria-labelledby="newSessionModalTitle">
+    <div class="app-modal-backdrop" data-new-session-cancel></div>
+    <section class="app-modal-card">
+      <span class="modal-icon">＋</span>
+      <h3 id="newSessionModalTitle" data-i18n="newSessionConfirmTitle"></h3>
+      <p data-i18n="newSessionConfirm"></p>
+      <div class="modal-actions"><button class="btn ghost" type="button" data-new-session-cancel data-i18n="cancel"></button><button class="btn primary" type="button" id="confirmNewSessionBtn" data-i18n="newSession"></button></div>
+    </section>
+  </div>
+  <div class="app-modal preview-lightbox" id="previewLightbox" hidden role="dialog" aria-modal="true" aria-label="Large character preview">
+    <div class="app-modal-backdrop" data-preview-close></div>
+    <section class="preview-lightbox-card"><button type="button" class="preview-close" data-preview-close aria-label="Close">×</button><div id="previewLightboxArt"></div></section>
+  </div>
+  <div class="app-modal" id="pairingScreen" hidden role="dialog" aria-modal="true" aria-labelledby="pairingTitle">
+    <div class="app-modal-backdrop"></div>
+    <section class="app-modal-card">
+      <span class="modal-icon">🔒</span>
+      <h3 id="pairingTitle" data-i18n="pairingTitle"></h3>
+      <p data-i18n="pairingHint"></p>
+      <code class="pairing-code" id="pairingDeviceId"></code>
+      <p class="pairing-cmd" id="pairingCmd"></p>
+      <div class="modal-actions"><button type="button" class="btn ghost" id="pairingCopyBtn" data-i18n="pairingCopy"></button></div>
+      <p class="pairing-wait" data-i18n="pairingWaiting"></p>
+    </section>
   </div>
 </div>
 
-<script type="module" src="./js/app.js"></script>
+<script type="module" src="./js/app.js?v=25"></script>
 </body>
 </html>

@@ -21,9 +21,9 @@ export function attachInteractions(stage, pet, opts = {}) {
   const pointFrom = (e) => ({ x: e.clientX, y: e.clientY });
 
   function onDown(e) {
-    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    if (e.isPrimary === false || (e.pointerType === 'mouse' && e.button !== 0)) return;
     stage.setPointerCapture?.(e.pointerId);
-    start = { ...pointFrom(e), t: Date.now(), moved: false };
+    start = { ...pointFrom(e), pointerId: e.pointerId, t: Date.now(), moved: false };
     stage.classList.add('is-held');
     bumpIdle();
     clearTimeout(longTimer);
@@ -36,6 +36,7 @@ export function attachInteractions(stage, pet, opts = {}) {
   }
 
   function onMove(e) {
+    if (start && e.pointerId !== start.pointerId) return;
     pet.lookAt(e.clientX, e.clientY);
     if (!start) return;
     const dx = e.clientX - start.x;
@@ -49,6 +50,7 @@ export function attachInteractions(stage, pet, opts = {}) {
   }
 
   function onUp(e) {
+    if (!start || e.pointerId !== start.pointerId) return;
     stage.classList.remove('is-held');
     stage.style.setProperty('--drag-x', '0px');
     stage.style.setProperty('--drag-y', '0px');
@@ -71,6 +73,18 @@ export function attachInteractions(stage, pet, opts = {}) {
       return;
     }
 
+    if (s.moved) return;
+    // The pixel model responds to every single tap immediately. Other art
+    // styles retain their existing double-tap gesture.
+    if (pet.pixelAnimator) {
+      clearTimeout(pendingTap);
+      lastTapAt = 0;
+      haptics();
+      pet.react('poke', at);
+      bumpIdle();
+      return;
+    }
+
     const now = Date.now();
     if (now - lastTapAt < DOUBLE_TAP_MS) {
       clearTimeout(pendingTap);
@@ -88,8 +102,11 @@ export function attachInteractions(stage, pet, opts = {}) {
     bumpIdle();
   }
 
-  function onCancel() {
+  function onCancel(e) {
+    if (start && e.pointerId !== start.pointerId) return;
     clearTimeout(longTimer);
+    clearTimeout(pendingTap);
+    lastTapAt = 0;
     start = null;
     stage.classList.remove('is-held');
     stage.style.setProperty('--drag-x', '0px');
