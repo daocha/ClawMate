@@ -1,0 +1,61 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import webpush from 'web-push';
+import { DATA_DIR } from './config.js';
+
+const KEY_FILE = path.join(DATA_DIR, 'vapid.json');
+const SUB_FILE = path.join(DATA_DIR, 'subscriptions.json');
+
+function loadKeys() {
+  if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+    return { publicKey: process.env.VAPID_PUBLIC_KEY, privateKey: process.env.VAPID_PRIVATE_KEY };
+  }
+  try {
+    return JSON.parse(fs.readFileSync(KEY_FILE, 'utf8'));
+  } catch {
+    const keys = webpush.generateVAPIDKeys();
+    fs.writeFileSync(KEY_FILE, JSON.stringify(keys, null, 2));
+    return keys;
+  }
+}
+
+const keys = loadKeys();
+webpush.setVapidDetails(process.env.VAPID_SUBJECT || 'mailto:admin@example.com', keys.publicKey, keys.privateKey);
+
+let subs = [];
+try { subs = JSON.parse(fs.readFileSync(SUB_FILE, 'utf8')); } catch { subs = []; }
+
+const persist = () => fs.writeFileSync(SUB_FILE, JSON.stringify(subs, null, 2));
+
+export const publicKey = keys.publicKey;
+
+export function subscribe(sub) {
+  if (!sub?.endpoint) return false;
+  if (!subs.some((s) => s.endpoint === sub.endpoint)) {
+    subs.push(sub);
+    persist();
+  }
+  return true;
+}
+
+export function unsubscribe(endpoint) {
+  const before = subs.length;
+  subs = subs.filter((s) => s.endpoint !== endpoint);
+  if (subs.length !== before) persist();
+  return before !== subs.length;
+}
+
+export async function notify(payload) {
+  if (!subs.length) return 0;
+  const body = JSON.stringify(payload);
+  const results = await Promise.allSettled(subs.map((s) => webpush.sendNotification(s, body)));
+  const dead = [];
+  results.forEach((r, i) => {
+    if (r.status === 'rejected' && [404, 410].includes(r.reason?.statusCode)) dead.push(subs[i].endpoint);
+  });
+  if (dead.length) {
+    subs = subs.filter((s) => !dead.includes(s.endpoint));
+    persist();
+  }
+  return results.filter((r) => r.status === 'fulfilled').length;
+}

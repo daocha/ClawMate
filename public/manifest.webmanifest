@@ -1,0 +1,23 @@
+{
+  "id": "/",
+  "name": "ClawMate 伴靈",
+  "short_name": "ClawMate",
+  "description": "ClawMate (伴靈) - a cute digital pet with HD and pixel art styles, touch interactions and AI chat through OpenClaw.",
+  "lang": "zh-TW",
+  "dir": "auto",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#f7f2ea",
+  "theme_color": "#ff6fa5",
+  "categories": ["entertainment", "lifestyle"],
+  "icons": [
+    { "src": "./icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "./icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "./icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "./icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

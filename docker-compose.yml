@@ -1,0 +1,44 @@
+services:
+  clawmate:
+    build: .
+    container_name: clawmate
+    restart: unless-stopped
+    ports:
+      - "${PORT:-8080}:8080"
+    environment:
+      PORT: 8080
+      DATA_DIR: /app/data
+      # Leave these blank to configure everything from the in-app Settings screen instead.
+      OPENCLAW_URL: ${OPENCLAW_URL:-}
+      OPENCLAW_TOKEN: ${OPENCLAW_TOKEN:-}
+      OPENCLAW_AGENT_ID: ${OPENCLAW_AGENT_ID:-main}
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
+      VAPID_SUBJECT: ${VAPID_SUBJECT:-mailto:admin@example.com}
+    volumes:
+      - pet-data:/app/data
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # Optional: run OpenClaw alongside the pet.
+  #   docker compose --profile openclaw up -d
+  # Then set the OpenClaw URL in the app's Settings to http://openclaw:18789
+  openclaw:
+    image: ghcr.io/openclaw/openclaw:latest
+    container_name: openclaw
+    profiles: ["openclaw"]
+    restart: unless-stopped
+    ports:
+      - "18789:18789"
+    environment:
+      OPENCLAW_GATEWAY_PORT: 18789
+      OPENCLAW_GATEWAY_TOKEN: ${OPENCLAW_TOKEN:-}
+    volumes:
+      - openclaw-data:/home/node/.openclaw
+
+volumes:
+  pet-data:
+  openclaw-data:

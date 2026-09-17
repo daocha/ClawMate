@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="zh-TW" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#f7f2ea" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#14131a" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ClawMate 伴靈">
+<meta name="application-name" content="ClawMate">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>ClawMate 伴靈</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="./icons/icon-180.png">
+<link rel="stylesheet" href="./css/app.css">
+</head>
+<body>
+<div class="app" data-view="pet">
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-dot"></span>
+      <span data-i18n="appName">ClawMate 伴靈</span>
+    </div>
+    <div class="topbar-actions">
+      <span class="conn" id="conn" data-state="idle"><i></i><span id="connText" data-i18n="disconnected"></span></span>
+      <button class="icon-btn install" id="installBtn" data-i18n-label="install" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5v11M12 14.5l-4-4M12 14.5l4-4M4.5 18.5h15" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="icon-btn" id="langBtn" data-i18n-label="language">
+        <span id="langLabel">EN</span>
+      </button>
+      <button class="icon-btn" id="themeBtn" data-i18n-label="theme">
+        <svg viewBox="0 0 24 24" class="ico-sun" aria-hidden="true"><circle cx="12" cy="12" r="4.6"/><g stroke-linecap="round"><path d="M12 2.6v2.6M12 18.8v2.6M2.6 12h2.6M18.8 12h2.6M5.3 5.3l1.9 1.9M16.8 16.8l1.9 1.9M18.7 5.3l-1.9 1.9M7.2 16.8l-1.9 1.9"/></g></svg>
+        <svg viewBox="0 0 24 24" class="ico-moon" aria-hidden="true"><path d="M20 14.2A8.2 8.2 0 0 1 9.8 4a8.4 8.4 0 1 0 10.2 10.2z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="main">
+    <!-- ------------------------------------------------------------- pet -->
+    <section class="view view-pet" id="view-pet">
+      <div class="stage-shell">
+        <div class="stage" id="stage"></div>
+        <div class="bubble" id="bubble" hidden><span id="bubbleText"></span></div>
+      </div>
+
+      <div class="pet-info">
+        <h1 class="pet-name" id="petName">—</h1>
+        <p class="pet-tag" id="petTag">—</p>
+        <div class="stats">
+          <div class="stat"><span data-i18n="statHappy"></span><div class="bar"><i id="barMood" style="width:70%"></i></div></div>
+          <div class="stat"><span data-i18n="statEnergy"></span><div class="bar"><i id="barEnergy" style="width:80%"></i></div></div>
+        </div>
+        <p class="hint" data-i18n="interactionHint"></p>
+      </div>
+
+      <div class="quickbar">
+        <button class="chip" id="pickBtn"><span data-i18n="character"></span></button>
+        <div class="seg" role="group" data-i18n-label="artStyle">
+          <button class="seg-btn is-on" data-style="hd" data-i18n="styleHd"></button>
+          <button class="seg-btn" data-style="pixel" data-i18n="stylePixel"></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ------------------------------------------------------------ chat -->
+    <section class="view view-chat" id="view-chat">
+      <div class="chat-bar">
+        <button type="button" class="icon-btn" id="newSessionBtn" data-i18n-label="newSession" data-i18n-title="newSession">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="chat-log" id="chatLog"><p class="chat-empty" data-i18n="emptyChat"></p></div>
+      <form class="composer" id="composer">
+        <button type="button" class="icon-btn mic" id="micBtn" data-i18n-label="voice">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3"/></svg>
+        </button>
+        <input id="chatInput" type="text" autocomplete="off" enterkeyhint="send" data-i18n-ph="chatPlaceholder">
+        <button type="submit" class="icon-btn send" id="sendBtn" data-i18n-label="send">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.4 20.6 21 12 3.4 3.4 3.4 10l12 2-12 2z"/></svg>
+        </button>
+      </form>
+    </section>
+
+    <!-- -------------------------------------------------------- settings -->
+    <section class="view view-settings" id="view-settings">
+      <div class="settings-inner">
+        <h2 data-i18n="settingsTitle"></h2>
+        <p class="lede" data-i18n="settingsHint"></p>
+
+        <fieldset class="card">
+          <legend data-i18n="secConnection"></legend>
+          <label class="field">
+            <span data-i18n="serverUrl"></span>
+            <input id="setUrl" type="url" inputmode="url" placeholder="http://localhost:18789" autocomplete="off">
+            <small data-i18n="serverUrlHelp"></small>
+          </label>
+          <label class="field">
+            <span data-i18n="token"></span>
+            <input id="setToken" type="password" placeholder="••••••••" autocomplete="off">
+            <small data-i18n="tokenHelp"></small>
+          </label>
+          <div class="row">
+            <button type="button" class="btn ghost" id="testBtn" data-i18n="testConnection"></button>
+            <span class="test-result" id="testResult"></span>
+          </div>
+        </fieldset>
+
+        <fieldset class="card">
+          <legend data-i18n="secAgent"></legend>
+          <label class="field">
+            <span data-i18n="agentId"></span>
+            <div class="row-inline">
+              <select id="setAgent"></select>
+              <button type="button" class="btn ghost small" id="reloadAgents" data-i18n="refreshAgents"></button>
+            </div>
+            <small data-i18n="agentIdHelp"></small>
+          </label>
+          <label class="field">
+            <span data-i18n="transport"></span>
+            <select id="setTransport">
+              <option value="openai" data-i18n="transportOpenai"></option>
+              <option value="gateway" data-i18n="transportGateway"></option>
+            </select>
+            <small data-i18n="transportHelp"></small>
+          </label>
+          <label class="field">
+            <span data-i18n="petName"></span>
+            <input id="setPetName" type="text" autocomplete="off">
+          </label>
+        </fieldset>
+
+        <fieldset class="card">
+          <legend data-i18n="secNotify"></legend>
+          <label class="toggle">
+            <input type="checkbox" id="setPush">
+            <span data-i18n="enablePush"></span>
+          </label>
+          <small data-i18n="pushHelp"></small>
+          <p class="test-result" id="pushResult"></p>
+          <label class="toggle"><input type="checkbox" id="setSound"><span data-i18n="soundOn"></span></label>
+          <label class="toggle"><input type="checkbox" id="setHaptics" checked><span data-i18n="hapticsOn"></span></label>
+          <label class="toggle"><input type="checkbox" id="setMotion"><span data-i18n="reducedMotion"></span></label>
+        </fieldset>
+
+        <div class="save-row">
+          <button type="button" class="btn primary" id="saveBtn" data-i18n="save"></button>
+          <span class="test-result" id="saveResult"></span>
+        </div>
+
+        <fieldset class="card">
+          <legend data-i18n="secAbout"></legend>
+          <p class="lede" data-i18n="aboutText"></p>
+        </fieldset>
+      </div>
+    </section>
+  </main>
+
+  <nav class="tabbar">
+    <button class="tab is-on" data-view="pet">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="6"/><circle cx="6.5" cy="6" r="2.6"/><circle cx="17.5" cy="6" r="2.6"/></svg>
+      <span data-i18n="tabPet"></span>
+    </button>
+    <button class="tab" data-view="chat">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h16v11H12l-5 3.5v-3.5H4z"/></svg>
+      <span data-i18n="tabChat"></span>
+    </button>
+    <button class="tab" data-view="settings">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.8v3M12 18.2v3M2.8 12h3M18.2 12h3M5.4 5.4l2.1 2.1M16.5 16.5l2.1 2.1M18.6 5.4l-2.1 2.1M7.5 16.5l-2.1 2.1"/></svg>
+      <span data-i18n="tabSettings"></span>
+    </button>
+  </nav>
+
+  <div class="sheet" id="sheet" hidden>
+    <div class="sheet-backdrop" data-close></div>
+    <div class="sheet-body">
+      <div class="sheet-grabber"></div>
+      <h3 data-i18n="pickCharacter"></h3>
+      <div class="char-grid" id="charGrid"></div>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="./js/app.js"></script>
+</body>
+</html>
