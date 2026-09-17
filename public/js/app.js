@@ -1,9 +1,10 @@
 import { CHARACTERS, getCharacter } from './characters.js';
 import { renderReal } from './render-real.js?v=24';
 import { renderChibi } from './render-chibi.js?v=24';
-import { renderPixel } from './render-pixel.js?v=26';
-import { Pet } from './pet.js?v=26';
-import { attachInteractions } from './interactions.js?v=25';
+import { renderPixel } from './render-pixel.js?v=27';
+import { renderCartoon, hasCartoonArt } from './render-cartoon.js?v=1';
+import { Pet } from './pet.js?v=28';
+import { attachInteractions } from './interactions.js?v=26';
 import { companionApi, needLabel, actionLabel } from './companions.js';
 import { PetSocket, ChatView } from './chat.js';
 import { initSettings, startNewSession } from './settings.js';
@@ -62,11 +63,12 @@ $('pairingCopyBtn').addEventListener('click', () => {
 let currentId = prefs.get('character', 'momo');
 if (!getCharacter(currentId).visible) currentId = 'momo';
 let artStyle = prefs.get('style', 'hd');
-if (!['hd', 'chibi', 'pixel'].includes(artStyle)) artStyle = 'hd';
+if (!['hd', 'chibi', 'cartoon', 'pixel'].includes(artStyle)) artStyle = 'hd';
 let companions = {};
 
 function renderCharacter(spec, presentation = 'crop') {
   if (artStyle === 'pixel') return renderPixel(spec, presentation);
+  if (artStyle === 'cartoon') return hasCartoonArt(spec) ? renderCartoon(spec) : renderChibi(spec, presentation);
   if (artStyle === 'chibi') return renderChibi(spec, presentation);
   return renderReal(spec, presentation);
 }

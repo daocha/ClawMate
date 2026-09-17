@@ -1,7 +1,8 @@
 import { renderReal } from './render-real.js?v=24';
 import { renderChibi } from './render-chibi.js?v=24';
-import { renderPixel, hasPixelModel } from './render-pixel.js?v=26';
-import { PixelAnimator, WIDTH, HEIGHT } from './pixel-model.js?v=26';
+import { renderPixel, hasPixelModel } from './render-pixel.js?v=27';
+import { renderCartoon, hasCartoonArt } from './render-cartoon.js?v=1';
+import { PixelAnimator, WIDTH, HEIGHT } from './pixel-model.js?v=27';
 import { mouthPath, EXPRESSIONS, BROW_POSE } from './face.js';
 
 const BLINK_MIN = 2400;
@@ -18,6 +19,8 @@ export class Pet {
     this.blinkTimer = null;
     this.holdTimer = null;
     this.talkTimer = null;
+    this.cartoonImg = null;
+    this.cartoonTimer = null;
     this.mood = 70;
     this.energy = 80;
     this.asleep = false;
@@ -30,18 +33,22 @@ export class Pet {
     this.pixelAnimator?.destroy();
     this.pixelAnimator = null;
     clearTimeout(this.holdTimer);
+    clearTimeout(this.cartoonTimer);
     clearInterval(this.talkTimer);
     this.talkTimer = null;
     this.spec = spec;
     this.mode = mode;
     const modeled = mode === 'pixel' && hasPixelModel(spec);
+    const cartoonArt = mode === 'cartoon' && hasCartoonArt(spec);
     const svg = modeled
       ? `<canvas class="pet-pixel-canvas" width="${WIDTH}" height="${HEIGHT}" role="img" aria-label="${spec.name.en}"></canvas>`
       : mode === 'pixel'
       ? renderPixel(spec)
-      : mode === 'chibi'
-        ? renderChibi(spec, 'stage')
-        : renderReal(spec, 'stage');
+      : cartoonArt
+        ? renderCartoon(spec)
+        : mode === 'chibi'
+          ? renderChibi(spec, 'stage')
+          : renderReal(spec, 'stage');
     const host = this.stage.querySelector('.pet-host') || (() => {
       const d = document.createElement('div');
       d.className = 'pet-host';
@@ -52,6 +59,7 @@ export class Pet {
     this.host = host;
     this.svg = host.querySelector('svg, .pet-stage-art, canvas');
     if (modeled) this.pixelAnimator = new PixelAnimator(this.svg, spec, this.reducedMotion);
+    this.cartoonImg = cartoonArt ? host.querySelector('img.pet-cartoon-image') : null;
     // Raster HD portraits use a native <img>; the remaining SVG styles keep
     // spare aspect-ratio space below the artwork.
     if (this.svg.tagName.toLowerCase() === 'svg') {
@@ -74,6 +82,7 @@ export class Pet {
     this.pixelAnimator?.destroy();
     clearTimeout(this.blinkTimer);
     clearTimeout(this.holdTimer);
+    clearTimeout(this.cartoonTimer);
     clearInterval(this.talkTimer);
   }
 
@@ -88,7 +97,7 @@ export class Pet {
 
   scheduleBlink() {
     clearTimeout(this.blinkTimer);
-    if (this.reducedMotion || this.pixelAnimator) return;
+    if (this.reducedMotion || this.pixelAnimator || this.cartoonImg) return;
     const wait = BLINK_MIN + Math.random() * (BLINK_MAX - BLINK_MIN);
     this.blinkTimer = setTimeout(() => {
       this.blink(Math.random() < 0.22);
@@ -193,6 +202,12 @@ export class Pet {
     setTimeout(() => this.root.classList.remove(cls), ms);
   }
 
+  flashCartoon(holdMs = 900) {
+    clearTimeout(this.cartoonTimer);
+    this.cartoonImg.src = this.cartoonImg.dataset.tapSrc;
+    this.cartoonTimer = setTimeout(() => { this.cartoonImg.src = this.cartoonImg.dataset.baseSrc; }, holdMs);
+  }
+
   touchZone(at) {
     if (!at || !this.svg) return 'body';
     const box = this.svg.getBoundingClientRect();
@@ -212,6 +227,7 @@ export class Pet {
       this.pixelAnimator.randomAction();
       this.burst('heart', at, 2); this.onReact('reactPet'); return;
     }
+    if (this.cartoonImg) this.flashCartoon();
     switch (kind) {
       case 'pet':
         this.adjust(+4, 0); this.express('happy', 1800); this.animate('fx-nuzzle', 900);

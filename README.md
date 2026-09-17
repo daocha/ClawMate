@@ -1,3 +1,6 @@
+<p align="center">
+  <img src="public/assets/artwork/readme-hero-latest.png" alt="ClawMate Banner" width="100%">
+</p>
 # ClawMate (伴靈)
 
 A web-based digital pet you keep as a browser tab or install as a PWA. Pet it, feed it,
@@ -6,7 +9,7 @@ agent, with streaming replies and optional push notifications.
 
 ## Features
 
-- Photorealistic HD portraits and animals, detailed species-specific Q art, and pixel-art character styles with touch interactions (tap, swipe, long-press)
+- Photorealistic HD pets, detailed species-specific Q-version art, and pixel-art character styles with touch interactions (tap, swipe, long-press)
 - Mood/energy stats that react to how you play with the pet
 - AI chat over an OpenClaw Gateway, via either transport:
   - **OpenAI-compatible** (`/v1/chat/completions`, SSE streaming) — recommended, most reliable
@@ -25,15 +28,19 @@ Animation pauses when the page is hidden and is disposed when changing styles
 or characters. Character cards use a static SVG from the same model.
 
 Run the pixel rendering, gesture and lifecycle checks with
-`node --test scripts/pixel-model.test.js`.
+`npm test`.
 
 ## Quick start
 
 ```bash
 npm install
-./start.sh          # starts on http://localhost:8080
+./start.sh          # native Node server: http://localhost:2050
 ./stop.sh
 ```
+
+To use a different native port, prefix the command with `PORT=8080` (or put
+`PORT=8080` in `.env`). Docker uses port `8080` by default; see [Docker](#docker).
+For a minimal direct run without the helper script, `npm start` listens on port `8080`.
 
 ### Tailscale Serve under a path
 
@@ -100,7 +107,7 @@ Everything can be configured from the in-app **Settings** tab — no restart nee
 Use **Test connection** to probe the server; it auto-recommends the transport your
 OpenClaw build actually supports.
 
-Alternatively, seed the initial config via environment variables (see `.env.example`):
+Alternatively, seed the initial config via environment variables (see [`.env.example`](.env.example)):
 `PORT`, `DATA_DIR`, `OPENCLAW_URL`, `OPENCLAW_TOKEN`, `OPENCLAW_AGENT_ID`, and the
 `VAPID_*` keys for push notifications. Settings saved through the UI are persisted to
 `data/settings.json` and take precedence over env vars after first boot.
@@ -139,3 +146,16 @@ data/             Persisted settings, paired devices, and VAPID keys (created on
 
 - Node.js >= 20
 - An OpenClaw Gateway reachable from wherever ClawMate runs
+
+## Notes for contributors
+
+- Run the pixel renderer and gesture checks with `npm test`.
+- `data/` contains runtime state and credentials; do not commit a populated `data/settings.json` or VAPID private key.
+
+## License
+
+Distributed under the [MIT License](LICENSE).
+
+<p align="center">
+  <img src="public/assets/artwork/clawmate.png" alt="ClawMate Logo" width="100%">
+</p>

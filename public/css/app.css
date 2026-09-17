@@ -224,6 +224,13 @@ html[data-theme="dark"] .ico-moon { display: block; }
 .pet-svg--real .pet-photo, .pet-real-stage .pet-photo { filter: drop-shadow(0 18px 20px rgba(24, 18, 22, .16)); }
 .pet-svg--real .pet-root, .pet-real-stage .pet-root { transform-origin: 50% 88%; }
 .pet-svg--real .pet-photo--portrait, .pet-real-stage .pet-photo--portrait { filter: drop-shadow(0 20px 24px rgba(24, 18, 22, .2)); }
+.pet-cartoon-stage { align-items: center; }
+.pet-cartoon-stage .pet-photo { filter: drop-shadow(0 18px 20px rgba(24, 18, 22, .16)); }
+.pet-cartoon-stage .pet-root { transform-origin: 50% 88%; align-items: center; }
+/* Cartoon art is square reference artwork, not a cropped portrait - show it at
+   its natural size, centered on both axes, instead of stretching to fill the
+   stage's blank space. */
+.pet-cartoon-stage .pet-stage-image { width: auto; height: auto; max-width: 100%; max-height: 100%; }
 .pet-svg--chibi { isolation: isolate; }
 .pet-svg--chibi .pet-chibi-art, .pet-chibi-stage .pet-chibi-art { filter: drop-shadow(0 16px 18px rgba(24, 18, 22, .15)); }
 .pet-svg--chibi .pet-root { transform-origin: 50% 90%; }
@@ -532,7 +539,12 @@ html[data-theme="dark"] .ico-moon { display: block; }
 }
 .char-card:active { transform: scale(.94); }
 .char-card.is-on { border-color: var(--accent); box-shadow: 0 0 0 4px var(--tap); }
-.char-card svg { width: 100%; height: 66px; display: block; }
+.char-card svg, .char-card .pet-stage-art { width: 100%; height: 66px; display: block; overflow: hidden; }
+/* The idle breathe/head-bob/wave/pixel animations are plain CSS rules with no
+   #stage scoping, so they also run on these tiny thumbnails; combined with the
+   stage's `overflow: visible` that lets hair/arms bleed past the crop, they'd
+   intermittently paint over the name/tagline below. Thumbnails stay static. */
+.char-card svg *, .char-card .pet-stage-art * { animation: none !important; }
 .char-card .pet-svg--real .pet-photo { filter: drop-shadow(0 8px 8px rgba(24, 18, 22, .14)); }
 .char-card .pet-svg--chibi .pet-chibi-art { filter: drop-shadow(0 7px 7px rgba(24, 18, 22, .13)); }
 .char-card b { display: block; font-size: 12px; margin-top: 4px; font-weight: 600; }
