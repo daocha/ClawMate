@@ -1,4 +1,4 @@
-const CACHE = 'clawmate-v26';
+const CACHE = 'clawmate-v28';
 const SCOPE_PATH = new URL(self.registration.scope).pathname.replace(/\/?$/, '/');
 const API_PATH = `${SCOPE_PATH}api/`;
 const SHELL = [
@@ -13,7 +13,7 @@ const SHELL = [
   './assets/chibi/momo-painted-v4.png', './assets/chibi/aria-painted-v4.png', './assets/chibi/mochi-painted-v2.png', './assets/chibi/coco-painted-v2.png',
   './assets/chibi/luna.png', './assets/chibi/kiko.png', './assets/chibi/bao.png', './assets/chibi/ember.png',
   './assets/chibi/pino.png', './assets/chibi/nova.png',
-  './icons/icon.svg', './icons/icon-192.png', './icons/icon-512.png'
+  './icons/icon-180.png', './icons/icon-192.png', './icons/icon-512.png'
 ];
 
 self.addEventListener('install', (event) => {
