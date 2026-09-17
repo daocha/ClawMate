@@ -8,6 +8,8 @@ import { companionApi, needLabel } from './companions.js';
 import { PetSocket, ChatView } from './chat.js';
 import { initSettings, startNewSession } from './settings.js';
 import { setLang, getLang, t, localized, applyTranslations } from './i18n.js';
+import { getDeviceId } from './device.js';
+import { appUrl } from './urls.js';
 
 /* ------------------------------------------------------------------ prefs */
 const STORE = 'clawmate:prefs';
@@ -23,6 +25,39 @@ const prefs = {
 const $ = (id) => document.getElementById(id);
 const app = document.querySelector('.app');
 const stage = $('stage');
+
+/* --------------------------------------------------------- device pairing */
+// The backend rejects any request from a device the operator hasn't approved
+// (see server/devices.js). Show a blocking screen with this device's id and the
+// approval command until that happens, then poll and reload once it does.
+async function checkDeviceApproved() {
+  try {
+    const res = await fetch(appUrl('api/device/status'));
+    return await res.json();
+  } catch {
+    return { approved: true }; // can't reach the server - let the rest of the app degrade offline as usual
+  }
+}
+
+(async function guardDevice() {
+  const status = await checkDeviceApproved();
+  if (status.approved) return;
+  const deviceId = status.deviceId || getDeviceId();
+  $('pairingDeviceId').textContent = deviceId;
+  $('pairingCmd').textContent = `./start.sh approve ${deviceId}`;
+  $('pairingScreen').hidden = false;
+  const poll = setInterval(async () => {
+    const next = await checkDeviceApproved();
+    if (next.approved) { clearInterval(poll); window.location.reload(); }
+  }, 4000);
+})();
+
+$('pairingCopyBtn').addEventListener('click', () => {
+  navigator.clipboard?.writeText($('pairingCmd').textContent).then(() => {
+    $('pairingCopyBtn').textContent = t('pairingCopied');
+    setTimeout(() => { $('pairingCopyBtn').textContent = t('pairingCopy'); }, 1600);
+  }).catch(() => {});
+});
 
 let currentId = prefs.get('character', 'momo');
 if (!getCharacter(currentId).visible) currentId = 'momo';

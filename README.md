@@ -56,6 +56,27 @@ docker compose --profile openclaw up -d
 
 then point the app's Settings screen at `http://openclaw:18789`.
 
+## Device pairing
+
+ClawMate's own HTTP/WebSocket endpoints have no login of their own, and the server
+listens on `0.0.0.0` - so without pairing, anyone on the same LAN who can reach the
+port could chat through your configured OpenClaw token once it's been entered.
+
+Instead, every browser generates its own random device id (via `crypto.randomUUID()`,
+stored in `localStorage`) and sends it with every request. The id is never derived
+from request metadata like the User-Agent, so it can't be forged by spoofing that
+metadata - only guessing it works, which is infeasible. A brand-new device sees a
+"not paired" screen showing its id and stays locked out of the API and chat socket
+until you approve it from the host's terminal:
+
+```bash
+./start.sh approve <device-id>   # let a device through
+./start.sh devices               # list every device that has ever connected
+./start.sh revoke <device-id>    # pull a device's access back
+```
+
+Pairing state lives in `data/devices.json`, next to the rest of ClawMate's data.
+
 ## Configuring the OpenClaw connection
 
 Everything can be configured from the in-app **Settings** tab — no restart needed:
@@ -93,13 +114,14 @@ server/           Express + WebSocket backend
   index.js          HTTP routes, WebSocket relay, push notifications
   openclaw.js        OpenClaw transport adapters (OpenAI-compatible + Gateway WS)
   config.js          Settings persistence (data/settings.json)
+  devices.js         Device pairing registry + `approve`/`revoke`/`list` CLI
   push.js            Web push subscription handling
 public/           Static PWA frontend
   index.html
-  js/                App logic, chat UI, settings, i18n, pet rendering/interactions
+  js/                App logic, chat UI, settings, i18n, pet rendering/interactions, device.js
   css/app.css
   sw.js              Service worker (offline shell + push)
-data/             Persisted settings and VAPID keys (created on first run)
+data/             Persisted settings, paired devices, and VAPID keys (created on first run)
 ```
 
 ## Requirements

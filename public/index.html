@@ -220,6 +220,18 @@
     <div class="app-modal-backdrop" data-preview-close></div>
     <section class="preview-lightbox-card"><button type="button" class="preview-close" data-preview-close aria-label="Close">×</button><div id="previewLightboxArt"></div></section>
   </div>
+  <div class="app-modal" id="pairingScreen" hidden role="dialog" aria-modal="true" aria-labelledby="pairingTitle">
+    <div class="app-modal-backdrop"></div>
+    <section class="app-modal-card">
+      <span class="modal-icon">🔒</span>
+      <h3 id="pairingTitle" data-i18n="pairingTitle"></h3>
+      <p data-i18n="pairingHint"></p>
+      <code class="pairing-code" id="pairingDeviceId"></code>
+      <p class="pairing-cmd" id="pairingCmd"></p>
+      <div class="modal-actions"><button type="button" class="btn ghost" id="pairingCopyBtn" data-i18n="pairingCopy"></button></div>
+      <p class="pairing-wait" data-i18n="pairingWaiting"></p>
+    </section>
+  </div>
 </div>
 
 <script type="module" src="./js/app.js"></script>

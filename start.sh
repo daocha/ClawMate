@@ -14,6 +14,23 @@ MODE="node"
 [ -f .env ] && set -a && . ./.env && set +a
 PORT="${PORT:-2050}"
 
+say() { printf '\033[1;35m[ClawMate]\033[0m %s\n' "$1"; }
+
+# ------------------------------------------------------------- device pairing
+# Every browser that talks to ClawMate generates its own random device id and
+# stays pending until an operator approves it here - see server/devices.js.
+case "${1:-}" in
+  approve|revoke)
+    [ -n "${2:-}" ] || { echo "usage: ./start.sh $1 <device-id>" >&2; exit 2; }
+    node server/devices.js "$1" "$2"
+    exit $?
+    ;;
+  devices)
+    node server/devices.js list
+    exit $?
+    ;;
+esac
+
 for arg in "$@"; do
   case "$arg" in
     --docker) MODE="docker" ;;
@@ -21,8 +38,6 @@ for arg in "$@"; do
     *) echo "unknown option: $arg (expected --docker or --node)" >&2; exit 2 ;;
   esac
 done
-
-say() { printf '\033[1;35m[ClawMate]\033[0m %s\n' "$1"; }
 
 # --------------------------------------------------------------- docker mode
 if [ "$MODE" = "docker" ]; then

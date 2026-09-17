@@ -7,6 +7,7 @@ import { getConfig, saveConfig, publicConfig } from './config.js';
 import { sendMessage, testConnection, listAgents } from './openclaw.js';
 import * as push from './push.js';
 import { getCompanions, interact, rewardChat, selectCompanion } from './companions.js';
+import { isValidDeviceId, touchDevice } from './devices.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT || 8080);
@@ -20,6 +21,24 @@ app.use(express.static(path.join(__dirname, '..', 'public'), {
 }));
 
 app.get('/api/health', (_req, res) => res.json({ ok: true, uptime: process.uptime() }));
+
+// Every other /api/* route requires a device the operator has approved from the
+// host's terminal (`./start.sh approve <id>`) - see server/devices.js for why.
+app.get('/api/device/status', (req, res) => {
+  const deviceId = String(req.query.device || '').trim();
+  if (!isValidDeviceId(deviceId)) return res.status(400).json({ ok: false, error: 'invalid-device-id' });
+  const record = touchDevice(deviceId, { ua: req.get('user-agent'), ip: req.ip });
+  res.json({ ok: true, deviceId, approved: record.approved });
+});
+
+app.use('/api', (req, res, next) => {
+  const deviceId = String(req.query.device || '').trim();
+  if (!isValidDeviceId(deviceId)) return res.status(400).json({ ok: false, error: 'invalid-device-id' });
+  const record = touchDevice(deviceId, { ua: req.get('user-agent'), ip: req.ip });
+  if (!record.approved) return res.status(403).json({ ok: false, error: 'device-pending', deviceId });
+  next();
+});
+
 app.get('/api/companions', (_req, res) => res.json({ ok: true, companions: getCompanions() }));
 app.post('/api/companions/:id/actions/:action', (req, res) => {
   const companion = interact(req.params.id, req.params.action);
@@ -65,7 +84,13 @@ app.post('/api/push/unsubscribe', (req, res) => res.json({ ok: push.unsubscribe(
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server, path: '/ws' });
 
-wss.on('connection', (socket) => {
+wss.on('connection', (socket, req) => {
+  const deviceId = new URL(req.url, 'http://internal').searchParams.get('device') || '';
+  const record = isValidDeviceId(deviceId)
+    ? touchDevice(deviceId, { ua: req.headers['user-agent'], ip: req.socket.remoteAddress })
+    : null;
+  if (!record?.approved) return socket.close(4401, 'device-pending');
+
   socket.isAlive = true;
   socket.hidden = false;
   socket.on('pong', () => { socket.isAlive = true; });

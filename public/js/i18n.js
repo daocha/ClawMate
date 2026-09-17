@@ -40,7 +40,7 @@ const DICT = {
     pushUnsupported: '這個瀏覽器不支援推播',
     connected: '已連線', connecting: '連線中…', disconnected: '未連線', reconnecting: '重新連線中…',
     notConfigured: '尚未設定',
-    petName: '寵物暱稱',
+    petName: '伴靈暱稱',
     soundOn: '音效', hapticsOn: '震動回饋', reducedMotion: '減少動態效果',
     interactionHint: '輕點摸摸頭・滑動逗牠玩・長按抱抱',
     statHappy: '心情', statEnergy: '活力', statAffinity: '親密度',
@@ -55,7 +55,9 @@ const DICT = {
     micUnsupported: '這個瀏覽器不支援語音輸入，請改用鍵盤。',
     emptyChat: '還沒有對話，先跟牠打聲招呼吧！',
     reactPet: '好舒服～', reactPoke: '欸！', reactSwipe: '哇啊～', reactHug: '最喜歡你了！',
-    reactFeed: '好好吃！', reactSleep: 'Zzz…'
+    reactFeed: '好好吃！', reactSleep: 'Zzz…',
+    pairingTitle: '這台裝置尚未配對', pairingHint: '請在執行 ClawMate 的電腦終端機輸入下面指令來核准這台裝置：',
+    pairingCopy: '複製指令', pairingCopied: '已複製！', pairingWaiting: '等待核准中，核准後會自動繼續…'
   },
   en: {
     appName: 'ClawMate',
@@ -111,7 +113,9 @@ const DICT = {
     micUnsupported: 'Voice input is not supported here, please type instead.',
     emptyChat: 'No messages yet — say hi!',
     reactPet: 'So cosy~', reactPoke: 'Hey!', reactSwipe: 'Whoaa~', reactHug: 'I love you!',
-    reactFeed: 'Yummy!', reactSleep: 'Zzz…'
+    reactFeed: 'Yummy!', reactSleep: 'Zzz…',
+    pairingTitle: 'This device is not paired yet', pairingHint: 'Run this command in a terminal on the computer running ClawMate to approve it:',
+    pairingCopy: 'Copy command', pairingCopied: 'Copied!', pairingWaiting: 'Waiting for approval — this will continue automatically once approved…'
   }
 };
 
