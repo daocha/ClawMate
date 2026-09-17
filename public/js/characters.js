@@ -2,11 +2,13 @@
 export const CHARACTERS = [
   {
     id: 'momo',
+    visible: true,
     archetype: 'humanoid',
     body: 'real',
     name: { en: 'Momo', 'zh-TW': '小桃' },
-    tagline: { en: 'Bright-hearted fighter', 'zh-TW': '爽朗系格鬥少女' },
-    hair: 'high-ponytail',
+    tagline: { en: 'Sweet everyday trendsetter', 'zh-TW': '清純可愛的日常女孩' },
+    companion: { type: 'human', personality: { 'zh-TW': '清純活潑、很在意日常分享與被記得的小事。喜歡一起散步、互傳心情與溫柔的擁抱。', en: 'Sweet and lively; treasures daily sharing and little things you remember. Loves walks, check-ins and gentle hugs.' } },
+    hair: 'soft-bangs',
     eyeStyle: 'realistic',
     palette: {
       skin: '#f3ccb2', skinLight: '#ffe3d0', skinShade: '#cc9879',
@@ -18,10 +20,12 @@ export const CHARACTERS = [
   },
   {
     id: 'aria',
+    visible: true,
     archetype: 'humanoid',
     body: 'tall',
     name: { en: 'Aria', 'zh-TW': '艾莉亞' },
-    tagline: { en: 'Quietly fearless heroine', 'zh-TW': '沉靜果敢的女主角' },
+    tagline: { en: 'Poised, thoughtful confidante', 'zh-TW': '成熟知性的都會女性' },
+    companion: { type: 'human', personality: { 'zh-TW': '成熟沉穩、理性而細膩，重視有內容的交流與被尊重的陪伴。喜歡深度聊天、安靜共讀與有心準備的一餐。', en: 'Mature, calm and perceptive; values meaningful conversation and respectful company. Loves deep talks, quiet reading and a thoughtful meal.' } },
     hair: 'long-straight',
     eyeStyle: 'realistic',
     palette: {
@@ -33,11 +37,13 @@ export const CHARACTERS = [
   },
   {
     id: 'mochi',
+    visible: true,
     archetype: 'critter',
     ears: 'cat',
     tail: 'cat',
     name: { en: 'Mochi', 'zh-TW': '麻糬貓' },
     tagline: { en: 'Cream kitty', 'zh-TW': '奶油小貓咪' },
+    companion: { type: 'cat', personality: { 'zh-TW': '黏人又有點挑剔，喜歡溫柔的互動。', en: 'Affectionate but a little particular; loves gentle attention.' } },
     eyeStyle: 'round',
     palette: {
       body: '#fff4e2', bodyDark: '#f0d9bd', belly: '#fffdf8', inner: '#ffc2cf',
@@ -47,11 +53,13 @@ export const CHARACTERS = [
   },
   {
     id: 'coco',
+    visible: true,
     archetype: 'critter',
     ears: 'dog',
     tail: 'fluff',
     name: { en: 'Coco', 'zh-TW': '可可柴' },
     tagline: { en: 'Happy shiba', 'zh-TW': '開心小柴犬' },
+    companion: { type: 'dog', personality: { 'zh-TW': '活力滿滿，最期待散步與一起玩。', en: 'Full of energy and always ready for walks and play.' } },
     eyeStyle: 'round',
     palette: {
       body: '#f0a95a', bodyDark: '#d08737', belly: '#fff3e0', inner: '#f5b5a0',

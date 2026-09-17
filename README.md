@@ -81,8 +81,10 @@ it's recognizable in OpenClaw's own connection/session views.
 
 Each chat message is tied to a session key (`agent:<agentId>:<sessionId>`) so OpenClaw
 can keep conversation context. The **new session** button in the chat view (top-right,
-"+" icon) clears the visible chat log and rotates to a fresh `sessionId`, so the agent
-starts without carrying over prior context.
+"+" icon) rotates to a fresh `sessionId` and drops a divider into the chat log, so the
+agent starts without carrying over prior context - but, like Telegram, earlier messages
+stay visible above the divider instead of being erased. The full chat log also persists
+in the browser's `localStorage`, so a page refresh does not wipe the conversation.
 
 ## Project layout
 

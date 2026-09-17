@@ -54,6 +54,16 @@ export class PetSocket extends EventTarget {
 
 /* -------------------------------------------------------------- chat UI */
 
+const STORAGE_KEY = 'clawmate:chatlog';
+const MAX_ENTRIES = 300;
+
+function loadEntries() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    return Array.isArray(raw) ? raw : [];
+  } catch { return []; }
+}
+
 export class ChatView {
   constructor(els, socket, opts = {}) {
     this.log = els.log;
@@ -62,9 +72,15 @@ export class ChatView {
     this.micBtn = els.micBtn;
     this.socket = socket;
     this.opts = opts;
-    this.history = [];
+    // `entries` is the full, persisted, cross-refresh log (Telegram-style, never cleared).
+    // `history` is just the sliding context sent to the model - it resets on a new session
+    // even though the entries (and their DOM bubbles) stay visible below the divider.
+    this.entries = loadEntries();
+    this.history = this.contextEntries();
     this.pending = null;
     this.recognition = null;
+
+    this.renderHistory();
 
     this.form.addEventListener('submit', (e) => {
       e.preventDefault();
@@ -79,12 +95,50 @@ export class ChatView {
     socket.addEventListener('error', (e) => this.failReply(e.detail));
   }
 
+  // Messages since the last "new session" divider - what actually gets sent as context.
+  contextEntries() {
+    const cut = this.entries.map((e) => e.role).lastIndexOf('divider') + 1;
+    return this.entries.slice(cut).map(({ role, text }) => ({ role, text }));
+  }
+
+  persistEntry(role, text) {
+    this.entries.push({ role, text });
+    if (this.entries.length > MAX_ENTRIES) this.entries.splice(0, this.entries.length - MAX_ENTRIES);
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(this.entries)); } catch { /* private mode */ }
+  }
+
+  renderHistory() {
+    if (!this.entries.length) {
+      // ChatView is constructed before applyLang()/applyTranslations() run at startup, so
+      // this placeholder needs data-i18n to get corrected once the real language is known.
+      this.log.innerHTML = `<p class="chat-empty" data-i18n="emptyChat">${t('emptyChat')}</p>`;
+      return;
+    }
+    this.log.innerHTML = '';
+    for (const entry of this.entries) {
+      if (entry.role === 'divider') this.renderDivider(entry.text);
+      else this.renderBubble(entry.role === 'user' ? 'me' : 'pet', entry.text);
+    }
+    this.scroll();
+  }
+
+  // Starts a fresh context window without discarding the visible history, like
+  // Telegram keeping old messages above a "history cleared" marker.
+  startNewSession() {
+    this.history = [];
+    const label = t('sessionStarted');
+    this.renderDivider(label);
+    this.persistEntry('divider', label);
+    this.scroll();
+  }
+
   submit(raw) {
     const text = (raw || '').trim();
     if (!text || this.pending) return;
     this.input.value = '';
     this.addMessage('me', text);
     this.history.push({ role: 'user', text });
+    this.persistEntry('user', text);
 
     const sent = this.socket.send({
       type: 'chat',
@@ -97,13 +151,27 @@ export class ChatView {
     else this.opts.onSend?.(text);
   }
 
-  addMessage(who, text, { error = false, pending = false } = {}) {
+  addMessage(who, text, opts = {}) {
+    const el = this.renderBubble(who, text, opts);
+    this.scroll();
+    return el;
+  }
+
+  renderBubble(who, text, { error = false, pending = false } = {}) {
     this.log.querySelector('.chat-empty')?.remove();
     const el = document.createElement('div');
     el.className = `msg ${who === 'me' ? 'me' : 'pet'}${error ? ' is-error' : ''}${pending ? ' is-pending' : ''}`;
     el.textContent = text;
     this.log.appendChild(el);
-    this.scroll();
+    return el;
+  }
+
+  renderDivider(text) {
+    this.log.querySelector('.chat-empty')?.remove();
+    const el = document.createElement('div');
+    el.className = 'chat-divider';
+    el.textContent = text;
+    this.log.appendChild(el);
     return el;
   }
 
@@ -144,6 +212,7 @@ export class ChatView {
       this.pending.classList.remove('is-pending');
       this.pending.textContent = text;
       this.history.push({ role: 'assistant', text });
+      this.persistEntry('assistant', text);
     }
     this.pending = null;
     this.buffer = '';
@@ -163,11 +232,6 @@ export class ChatView {
     }
     this.buffer = '';
     this.opts.onReplyEnd?.('');
-  }
-
-  clear() {
-    this.history = [];
-    this.log.innerHTML = `<p class="chat-empty">${t('emptyChat')}</p>`;
   }
 
   /* ------------------------------------------------------------- voice */

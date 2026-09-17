@@ -6,6 +6,7 @@ import { WebSocketServer } from 'ws';
 import { getConfig, saveConfig, publicConfig } from './config.js';
 import { sendMessage, testConnection, listAgents } from './openclaw.js';
 import * as push from './push.js';
+import { getCompanions, interact, rewardChat, selectCompanion } from './companions.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT || 8080);
@@ -19,6 +20,18 @@ app.use(express.static(path.join(__dirname, '..', 'public'), {
 }));
 
 app.get('/api/health', (_req, res) => res.json({ ok: true, uptime: process.uptime() }));
+app.get('/api/companions', (_req, res) => res.json({ ok: true, companions: getCompanions() }));
+app.post('/api/companions/:id/actions/:action', (req, res) => {
+  const companion = interact(req.params.id, req.params.action);
+  if (!companion) return res.status(404).json({ ok: false, error: 'Unknown companion action' });
+  res.json({ ok: true, companion });
+});
+app.post('/api/companions/chat-reward', (_req, res) => res.json({ ok: true, companions: rewardChat() }));
+app.post('/api/companions/select', (req, res) => {
+  const selection = selectCompanion(String(req.body?.id || ''));
+  if (!selection) return res.status(400).json({ ok: false, error: 'Unknown companion' });
+  res.json({ ok: true, companions: selection });
+});
 app.get('/api/settings', (_req, res) => res.json(publicConfig()));
 
 app.put('/api/settings', (req, res) => {

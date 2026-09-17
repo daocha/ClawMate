@@ -40,6 +40,9 @@
   </header>
 
   <main class="main">
+    <div class="pull-refresh" id="pullRefresh" aria-live="polite" role="status">
+      <span class="pull-icon">↓</span><div><strong id="pullRefreshText" data-i18n="pullToRefresh"></strong><i class="pull-meter"><b></b></i></div>
+    </div>
     <!-- ------------------------------------------------------------- pet -->
     <section class="view view-pet" id="view-pet">
       <div class="stage-shell">
@@ -58,7 +61,8 @@
       </div>
 
       <div class="quickbar">
-        <button class="chip" id="pickBtn"><span data-i18n="character"></span></button>
+        <button class="chip" id="careBtn"><span data-i18n="careMenu"></span></button>
+        <button class="chip" id="switchBtn"><span data-i18n="switchCharacter"></span></button>
         <div class="seg" role="group" data-i18n-label="artStyle">
           <button class="seg-btn is-on" data-style="hd" data-i18n="styleHd"></button>
           <button class="seg-btn" data-style="chibi" data-i18n="styleChibi"></button>
@@ -181,7 +185,40 @@
       <div class="sheet-grabber"></div>
       <h3 data-i18n="pickCharacter"></h3>
       <div class="char-grid" id="charGrid"></div>
+      <section class="switch-preview" id="switchPreview" hidden>
+        <button class="switch-preview-art" id="switchPreviewArt" type="button" data-i18n-label="enlargePreview"></button>
+        <div class="switch-preview-copy"><h4 id="switchPreviewName"></h4><p id="switchPreviewTag"></p><p id="switchPreviewPersonality"></p></div>
+        <div class="trait-list" id="traitList"></div>
+        <button class="btn primary switch-select-btn" id="selectPreviewBtn" type="button" data-i18n="selectThisCharacter"></button>
+      </section>
     </div>
+  </div>
+  <div class="sheet" id="careSheet" hidden>
+    <div class="sheet-backdrop" data-care-close></div>
+    <div class="sheet-body care-sheet-body">
+      <div class="sheet-grabber"></div>
+      <h3 data-i18n="careMenu"></h3>
+      <section class="companion-panel" id="companionPanel" hidden>
+        <div class="care-affinity"><span data-i18n="statAffinity"></span><b id="affinityValue">—</b><div class="bar"><i id="barAffinity" style="width:0%"></i></div></div>
+        <p class="personality" id="personalityText"></p>
+        <div class="need-grid" id="needGrid"></div>
+        <div class="action-grid" id="actionGrid"></div>
+        <small data-i18n="needDecayHint"></small>
+      </section>
+    </div>
+  </div>
+  <div class="app-modal" id="switchModal" hidden role="dialog" aria-modal="true" aria-labelledby="switchModalTitle">
+    <div class="app-modal-backdrop" data-switch-cancel></div>
+    <section class="app-modal-card">
+      <span class="modal-icon">♥</span>
+      <h3 id="switchModalTitle" data-i18n="switchConfirmTitle"></h3>
+      <p id="switchModalText"></p>
+      <div class="modal-actions"><button class="btn ghost" type="button" data-switch-cancel data-i18n="cancel"></button><button class="btn primary" type="button" id="confirmSwitchBtn" data-i18n="confirmSwitch"></button></div>
+    </section>
+  </div>
+  <div class="app-modal preview-lightbox" id="previewLightbox" hidden role="dialog" aria-modal="true" aria-label="Large character preview">
+    <div class="app-modal-backdrop" data-preview-close></div>
+    <section class="preview-lightbox-card"><button type="button" class="preview-close" data-preview-close aria-label="Close">×</button><div id="previewLightboxArt"></div></section>
   </div>
 </div>
 
