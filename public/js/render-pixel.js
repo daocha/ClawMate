@@ -1,6 +1,36 @@
 // 32x32 pixel-art renderer. Every character has a pixel twin of its HD form.
 const SIZE = 32;
 
+const PIXEL_SPRITES = {
+  momo: './assets/pixel-momo-v2.png',
+  aria: './assets/pixel-aria-v2.png',
+  mochi: './assets/pixel-mochi-v2.png',
+  coco: './assets/pixel-coco-v2.png'
+};
+
+function renderPixelSprite(spec, presentation) {
+  const human = spec.archetype === 'humanoid';
+  const cropHuman = human && presentation !== 'full';
+  const viewBox = cropHuman ? '0 0 1000 960' : '0 0 1000 1500';
+  const uid = `pixel-${spec.id}`;
+  const headBottom = human ? 620 : 700;
+  const bodyTop = human ? 500 : 610;
+  const armX = spec.id === 'momo' ? 575 : spec.id === 'aria' ? 600 : 540;
+  const armY = human ? 340 : 500;
+  return `<svg class="pet-svg pet-svg--pixel${cropHuman ? ' pet-svg--portrait-crop' : ''}" viewBox="${viewBox}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${spec.name.en}" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <clipPath id="${uid}-head"><rect x="0" y="0" width="1000" height="${headBottom}"/></clipPath>
+    <clipPath id="${uid}-body"><rect x="0" y="${bodyTop}" width="1000" height="${1500 - bodyTop}"/></clipPath>
+    <clipPath id="${uid}-arm"><rect x="${armX}" y="${armY}" width="${1000 - armX}" height="760"/></clipPath>
+  </defs>
+  <g class="pet-root">
+    <g class="pet-body pet-pixel-body" clip-path="url(#${uid}-body)"><image class="pet-pixel-art" href="${PIXEL_SPRITES[spec.id]}" x="0" y="0" width="1000" height="1500" preserveAspectRatio="xMidYMid meet"/></g>
+    <g class="pet-pixel-arm" clip-path="url(#${uid}-arm)"><image class="pet-pixel-art" href="${PIXEL_SPRITES[spec.id]}" x="0" y="0" width="1000" height="1500" preserveAspectRatio="xMidYMid meet"/></g>
+    <g class="pet-head pet-pixel-head" clip-path="url(#${uid}-head)" style="transform-origin:500px ${Math.round(headBottom * .72)}px"><image class="pet-pixel-art" href="${PIXEL_SPRITES[spec.id]}" x="0" y="0" width="1000" height="1500" preserveAspectRatio="xMidYMid meet"/></g>
+  </g>
+</svg>`;
+}
+
 class Grid {
   constructor(size = SIZE) {
     this.size = size;
@@ -193,6 +223,7 @@ function paintCritter(body, head, spec, p) {
 
 function paintHumanoid(body, head, spec, p) {
   const chibi = spec.body === 'chibi';
+  const isMomo = spec.id === 'momo';
   if (chibi) {
     body.rect(13, 28, 3, 3, p.skin); body.rect(17, 28, 3, 3, p.skin);
     body.rect(12, 30, 4, 1, p.accent); body.rect(17, 30, 4, 1, p.accent);
@@ -210,16 +241,23 @@ function paintHumanoid(body, head, spec, p) {
     head.ellipse(5, 9, 2, 2, p.accent); head.ellipse(27, 9, 2, 2, p.accent);    // ties
     head.px(12, 5, p.hairLight); head.px(13, 5, p.hairLight);
   } else {
+    // The pixel twins inherit the same outfit anchors as their HD and chibi
+    // counterparts: Momo's cream cardigan/pink skirt versus Aria's ivory
+    // blouse/plum office skirt. That makes the three modes readable as one cast.
+    const skirt = isMomo ? p.accent : p.clothDark;
+    const shoe = isMomo ? '#fffaf5' : p.clothDark;
+    const top = isMomo ? p.cloth2 : p.cloth;
     body.rect(13, 27, 3, 4, p.skin); body.rect(17, 27, 3, 4, p.skin);
-    body.rect(12, 30, 4, 1, p.clothDark); body.rect(17, 30, 4, 1, p.clothDark);
-    body.rect(12, 27, 4, 3, p.clothDark); body.rect(17, 27, 4, 3, p.clothDark);
-    body.tri(11, 27, 21, 27, 16, 21, p.clothDark);
-    body.rect(11, 25, 11, 3, p.clothDark);
-    body.rect(11, 24, 11, 1, p.accent);
-    body.rect(11, 19, 11, 5, p.cloth);
-    body.rect(13, 19, 7, 4, p.cloth2 || p.belly);
+    body.rect(12, 30, 4, 1, shoe); body.rect(17, 30, 4, 1, shoe);
+    body.rect(12, 27, 4, 3, shoe); body.rect(17, 27, 4, 3, shoe);
+    body.tri(11, 27, 21, 27, 16, 21, skirt);
+    body.rect(11, 25, 11, 3, skirt);
+    body.rect(11, 24, 11, 1, isMomo ? p.clothDark : p.accent);
+    body.rect(11, 19, 11, 5, top);
+    body.rect(13, 19, 7, 4, isMomo ? p.cloth2 : (p.cloth2 || p.belly));
     body.rect(14, 19, 5, 1, p.skin);
     body.ellipse(9, 22, 1.5, 4, p.skin); body.ellipse(23, 22, 1.5, 4, p.skin);
+    if (isMomo) { body.rect(10, 19, 2, 5, p.cloth); body.rect(20, 19, 2, 5, p.cloth); }
     body.rect(14, 17, 4, 2, p.skin);
 
     head.ellipse(16, 12, 9.5, 10, p.hairDark);
@@ -241,7 +279,8 @@ function paintHumanoid(body, head, spec, p) {
 
 /* ---------------------------------------------------------------- compose */
 
-export function renderPixel(spec) {
+export function renderPixel(spec, presentation = 'crop') {
+  if (PIXEL_SPRITES[spec.id]) return renderPixelSprite(spec, presentation);
   const p = spec.palette;
   const body = new Grid();
   const head = new Grid();
@@ -259,7 +298,9 @@ export function renderPixel(spec) {
     : { x: 16, y: 18 };
   const headOriginY = spec.archetype === 'humanoid' ? 22 : 21;
 
-  return `<svg class="pet-svg pet-svg--pixel" viewBox="0 0 ${SIZE} ${SIZE}" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true" shape-rendering="crispEdges" preserveAspectRatio="xMidYMid meet">
+  const cropHuman = spec.archetype === 'humanoid' && presentation !== 'full';
+  const viewBox = cropHuman ? `0 0 ${SIZE} 25` : `0 0 ${SIZE} ${SIZE}`;
+  return `<svg class="pet-svg pet-svg--pixel${cropHuman ? ' pet-svg--portrait-crop' : ''}" viewBox="${viewBox}" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true" shape-rendering="crispEdges" preserveAspectRatio="xMidYMid meet">
 <g class="pet-root">
   <g class="pet-shadow-layer"><rect class="pet-shadow" x="8" y="31" width="16" height="1" fill="#000" opacity=".16"/></g>
   <g class="pet-body">${body.toRects()}</g>

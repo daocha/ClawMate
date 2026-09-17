@@ -14,7 +14,8 @@ export const CHARACTERS = [
       skin: '#f3ccb2', skinLight: '#ffe3d0', skinShade: '#cc9879',
       lip: '#bc6670', lipDark: '#87424f', browColor: '#493532', lashColor: '#251c1d',
       hair: '#35282a', hairDark: '#1b1517', hairLight: '#72514b',
-      cloth: '#302d33', clothDark: '#19171d', cloth2: '#f1ebe2', accent: '#a94850',
+      // Shared through HD, chibi and pixel: cream cardigan + blush-pink skirt.
+      cloth: '#f5eee7', clothDark: '#d8c6bf', cloth2: '#f4bcc4', accent: '#d98d9a',
       iris: '#7e543e', irisDark: '#3b241c', blush: '#e89b91', outline: '#503b3d'
     }
   },
@@ -31,8 +32,8 @@ export const CHARACTERS = [
     palette: {
       skin: '#f8d8c0', skinLight: '#ffeade', skinShade: '#d9a888',
       lip: '#d4737a', lipDark: '#a8505c', browColor: '#6e4a43', lashColor: '#3d2a2a', hair: '#4a3436', hairDark: '#2b1d20',
-      hairLight: '#8a6360', cloth: '#332b3d', clothDark: '#1f1a28', cloth2: '#f4ece4',
-      accent: '#c8506a', iris: '#a85a4c', irisDark: '#5c2a26', blush: '#f2a8a4', outline: '#5a4044'
+      hairLight: '#8a6360', cloth: '#f6eee5', clothDark: '#573444', cloth2: '#fffaf2',
+      accent: '#795061', iris: '#a85a4c', irisDark: '#5c2a26', blush: '#f2a8a4', outline: '#5a4044'
     }
   },
   {

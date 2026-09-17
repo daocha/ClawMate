@@ -39,14 +39,17 @@ function animal(spec) {
     ${cat ? `<path d="M298 578h-126M298 604h-146M702 578h126M702 604h146" stroke="${p.outline}" stroke-width="9" stroke-linecap="round" opacity=".7"/>` : ''}</g>`;
 }
 
-export function renderChibi(spec) {
+export function renderChibi(spec, presentation = 'crop') {
   // The four active companions use bespoke illustrated cut-outs. The SVG wrapper
   // keeps the same gesture-driven bounce, hug, spin and particle reactions as
   // every other render mode; the code-drawn version remains a fallback for the
   // hidden catalogue characters.
   if (spec.visible) {
-    const image = `./assets/chibi/${spec.id}-painted-v2.png`;
-    return `<svg class="pet-svg pet-svg--chibi pet-svg--painted" viewBox="${VIEWBOX}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${esc(spec.name.en)}" preserveAspectRatio="xMidYMid meet"><defs><filter id="chibi-soft-${esc(spec.id)}" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="18" stdDeviation="14" flood-opacity=".17"/></filter></defs><g class="pet-root" filter="url(#chibi-soft-${esc(spec.id)})"><image class="pet-chibi-art" href="${image}" x="18" y="0" width="964" height="1400" preserveAspectRatio="xMidYMid meet"/></g></svg>`;
+    const images = { momo: 'momo-painted-v4.png', aria: 'aria-painted-v4.png' };
+    const image = `./assets/chibi/${images[spec.id] || `${spec.id}-painted-v2.png`}`;
+    const cropHuman = spec.archetype === 'humanoid' && presentation !== 'full';
+    const viewBox = cropHuman ? '0 0 1000 940' : VIEWBOX;
+    return `<svg class="pet-svg pet-svg--chibi pet-svg--painted${cropHuman ? ' pet-svg--portrait-crop' : ''}" viewBox="${viewBox}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${esc(spec.name.en)}" preserveAspectRatio="xMidYMid meet"><defs><filter id="chibi-soft-${esc(spec.id)}" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="18" stdDeviation="14" flood-opacity=".17"/></filter></defs><g class="pet-root" filter="url(#chibi-soft-${esc(spec.id)})"><image class="pet-chibi-art" href="${image}" x="18" y="0" width="964" height="1400" preserveAspectRatio="xMidYMid meet"/></g></svg>`;
   }
   const art = spec.archetype === 'humanoid' ? human(spec) : animal(spec);
   return `<svg class="pet-svg pet-svg--chibi" viewBox="${VIEWBOX}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${esc(spec.name.en)}" preserveAspectRatio="xMidYMid meet"><defs><filter id="chibi-soft-${esc(spec.id)}" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="18" stdDeviation="14" flood-opacity=".17"/></filter></defs><g filter="url(#chibi-soft-${esc(spec.id)})">${art}</g></svg>`;

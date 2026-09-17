@@ -168,7 +168,7 @@ export function initSettings(els, ctx) {
   els.reloadAgents.addEventListener('click', () => loadAgents());
   els.push.addEventListener('change', (e) => togglePush(e.target.checked));
 
-  [['sound', els.sound], ['haptics', els.haptics], ['reducedMotion', els.motion]].forEach(([key, el]) => {
+  [['haptics', els.haptics], ['reducedMotion', els.motion]].forEach(([key, el]) => {
     el.checked = ctx.prefs.get(key, key === 'haptics');
     el.addEventListener('change', () => {
       ctx.prefs.set(key, el.checked);

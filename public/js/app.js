@@ -4,7 +4,7 @@ import { renderChibi } from './render-chibi.js';
 import { renderPixel } from './render-pixel.js';
 import { Pet } from './pet.js';
 import { attachInteractions } from './interactions.js';
-import { companionApi, needLabel } from './companions.js';
+import { companionApi, needLabel, actionLabel } from './companions.js';
 import { PetSocket, ChatView } from './chat.js';
 import { initSettings, startNewSession } from './settings.js';
 import { setLang, getLang, t, localized, applyTranslations } from './i18n.js';
@@ -65,10 +65,10 @@ let artStyle = prefs.get('style', 'hd');
 if (!['hd', 'chibi', 'pixel'].includes(artStyle)) artStyle = 'hd';
 let companions = {};
 
-function renderCharacter(spec) {
-  if (artStyle === 'pixel') return renderPixel(spec);
-  if (artStyle === 'chibi') return renderChibi(spec);
-  return renderReal(spec);
+function renderCharacter(spec, presentation = 'crop') {
+  if (artStyle === 'pixel') return renderPixel(spec, presentation);
+  if (artStyle === 'chibi') return renderChibi(spec, presentation);
+  return renderReal(spec, presentation);
 }
 
 /* ------------------------------------------------------------------ theme */
@@ -146,15 +146,16 @@ function renderCompanion() {
   const actions = $('actionGrid');
   actions.innerHTML = '';
   data.actions.forEach((action) => {
+    const label = actionLabel(currentId, action.id, getLang());
     const button = document.createElement('button');
-    button.className = 'action-btn'; button.type = 'button'; button.textContent = action.label;
+    button.className = 'action-btn'; button.type = 'button'; button.textContent = label;
     button.addEventListener('click', async () => {
       button.disabled = true;
       try {
         companions[currentId] = await companionApi.act(currentId, action.id);
         renderCompanion();
         pet.react(action.id === 'feed' ? 'feed' : action.id === 'hug' ? 'hug' : 'pet');
-        showBubble(`${action.label} ♥`);
+        showBubble(`${label} ♥`);
       } catch { showBubble(t('errSend')); }
       finally { button.disabled = false; }
     });
@@ -238,7 +239,14 @@ function resetSheetMotion(target) {
   const backdrop = target.querySelector('.sheet-backdrop');
   body.style.transform = ''; body.style.transition = ''; backdrop.style.opacity = '';
 }
-const openSheet = () => { resetSheetMotion(sheet); buildCharacterGrid(); $('switchPreview').hidden = true; switchCandidateId = null; sheet.hidden = false; };
+const openSheet = () => {
+  resetSheetMotion(sheet);
+  buildCharacterGrid();
+  sheet.hidden = false;
+  // Always start with the active companion, rather than retaining the last
+  // character inspected in a previous visit to the picker.
+  previewCharacter(currentId);
+};
 const closeSheet = () => { resetSheetMotion(sheet); sheet.hidden = true; };
 $('switchBtn').addEventListener('click', openSheet);
 sheet.addEventListener('click', (e) => { if (e.target.dataset.close !== undefined) closeSheet(); });
@@ -247,7 +255,7 @@ const switchModal = $('switchModal');
 const previewLightbox = $('previewLightbox');
 $('switchPreviewArt').addEventListener('click', () => {
   if (!switchCandidateId) return;
-  $('previewLightboxArt').innerHTML = renderCharacter(getCharacter(switchCandidateId));
+  $('previewLightboxArt').innerHTML = renderCharacter(getCharacter(switchCandidateId), 'full');
   previewLightbox.hidden = false;
 });
 previewLightbox.addEventListener('click', (e) => { if (e.target.dataset.previewClose !== undefined) previewLightbox.hidden = true; });
@@ -382,41 +390,29 @@ const chat = new ChatView(
 document.addEventListener('visibilitychange', () => socket.setVisibility(document.hidden));
 socket.connect();
 
-$('newSessionBtn').addEventListener('click', async () => {
-  if (!confirm(t('newSessionConfirm'))) return;
+const newSessionModal = $('newSessionModal');
+const closeNewSessionModal = () => { newSessionModal.hidden = true; };
+$('newSessionBtn').addEventListener('click', () => { newSessionModal.hidden = false; });
+newSessionModal.addEventListener('click', (e) => {
+  if (e.target.dataset.newSessionCancel !== undefined) closeNewSessionModal();
+});
+$('confirmNewSessionBtn').addEventListener('click', async () => {
+  const button = $('confirmNewSessionBtn');
+  button.disabled = true;
   try {
     await startNewSession();
     chat.startNewSession();
+    closeNewSessionModal();
     showBubble(t('sessionStarted'));
   } catch {
     showBubble(t('errSend'));
+  } finally {
+    button.disabled = false;
   }
 });
 
-/* ---------------------------------------------------------- PWA install */
-let deferredInstall = null;
-const installBtn = $('installBtn');
-
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredInstall = e;
-  installBtn.hidden = false;
-});
-
-installBtn.addEventListener('click', async () => {
-  if (!deferredInstall) return;
-  deferredInstall.prompt();
-  const { outcome } = await deferredInstall.userChoice;
-  deferredInstall = null;
-  installBtn.hidden = true;
-  if (outcome === 'accepted') showBubble(t('installed'));
-});
-
-window.addEventListener('appinstalled', () => {
-  deferredInstall = null;
-  installBtn.hidden = true;
-  showBubble(t('installed'));
-});
+/* -------------------------------------------------------------- refresh */
+$('refreshBtn').addEventListener('click', () => refreshPage());
 
 /* ------------------------------------------------------- service worker */
 let swRegistration = null;
@@ -472,7 +468,7 @@ document.querySelector('.main').addEventListener('pointercancel', () => { pullSt
 const settings = initSettings(
   {
     url: $('setUrl'), token: $('setToken'), agent: $('setAgent'), transport: $('setTransport'),
-    petName: $('setPetName'), push: $('setPush'), sound: $('setSound'), haptics: $('setHaptics'),
+    petName: $('setPetName'), push: $('setPush'), haptics: $('setHaptics'),
     motion: $('setMotion'), needAlerts: $('setNeedAlerts'), dndStart: $('setDndStart'), dndEnd: $('setDndEnd'),
     saveBtn: $('saveBtn'), testBtn: $('testBtn'), reloadAgents: $('reloadAgents'),
     saveResult: $('saveResult'), testResult: $('testResult'), pushResult: $('pushResult')
