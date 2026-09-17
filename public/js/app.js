@@ -1,13 +1,15 @@
 import { CHARACTERS, getCharacter } from './characters.js';
 import { renderReal } from './render-real.js?v=24';
 import { renderChibi } from './render-chibi.js?v=24';
-import { renderPixel } from './render-pixel.js?v=27';
+import { renderPixel } from './render-pixel.js?v=28';
 import { renderCartoon, hasCartoonArt } from './render-cartoon.js?v=1';
 import { Pet } from './pet.js?v=28';
 import { attachInteractions } from './interactions.js?v=26';
-import { companionApi, needLabel, actionLabel } from './companions.js';
+import { companionApi, needLabel, actionLabel, FEED_ACTION } from './companions.js';
 import { PetSocket, ChatView } from './chat.js';
 import { initSettings, startNewSession } from './settings.js';
+import { playCatchGame } from './minigame.js';
+import { recordEvent, listAchievements } from './achievements.js';
 import { setLang, getLang, t, localized, applyTranslations } from './i18n.js';
 import { getDeviceId } from './device.js';
 import { appUrl } from './urls.js';
@@ -26,6 +28,9 @@ const prefs = {
 const $ = (id) => document.getElementById(id);
 const app = document.querySelector('.app');
 const stage = $('stage');
+
+// Flavor emoji for each companion's feeding-type mini-game (see FEED_ACTION).
+const FEED_EMOJI = { momo: '🍰', aria: '🍵', mochi: '🐟', coco: '🦴' };
 
 /* --------------------------------------------------------- device pairing */
 // The backend rejects any request from a device the operator hasn't approved
@@ -102,6 +107,25 @@ function applyLang(lang) {
 }
 $('langBtn').addEventListener('click', () => applyLang(getLang() === 'zh-TW' ? 'en' : 'zh-TW'));
 
+/* --------------------------------------------------------- topbar overflow */
+// Language and refresh are used rarely, so they live behind a "more" popover
+// instead of crowding the topbar next to the brand/connection status.
+const moreMenu = $('moreMenu');
+const moreBtn = $('moreBtn');
+const closeMoreMenu = () => { moreMenu.hidden = true; moreBtn.setAttribute('aria-expanded', 'false'); };
+moreBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  const willOpen = moreMenu.hidden;
+  moreMenu.hidden = !willOpen;
+  moreBtn.setAttribute('aria-expanded', String(willOpen));
+});
+document.addEventListener('click', (e) => {
+  if (!moreMenu.hidden && !e.target.closest('.topbar-more')) closeMoreMenu();
+});
+moreMenu.addEventListener('click', (e) => {
+  if (e.target.closest('button')) closeMoreMenu();
+});
+
 /* ------------------------------------------------------------------- pet */
 const pet = new Pet(stage, {
   reducedMotion: prefs.get('reducedMotion', false),
@@ -109,7 +133,13 @@ const pet = new Pet(stage, {
     showBubble(t(key));
     const action = { reactPet: 'pet', reactHug: 'hug', reactFeed: 'feed' }[key];
     if (action && companions[currentId]?.actions.some((item) => item.id === action)) {
-      companionApi.act(currentId, action).then((next) => { companions[currentId] = next; renderCompanion(); }).catch(() => {});
+      companionApi.act(currentId, action).then((next) => {
+        companions[currentId] = next;
+        renderCompanion();
+        announceUnlocks(recordEvent('interaction'));
+        syncTierStat();
+        handleTierUp(next.tierUp);
+      }).catch(() => {});
     }
   }
 });
@@ -135,6 +165,7 @@ function renderCompanion() {
   panel.hidden = false;
   $('barAffinity').style.width = `${data.affinity}%`;
   $('affinityValue').textContent = `${data.affinity}%`;
+  $('tierBadge').textContent = data.tier ? t('tierStage').replace('{tier}', localized(data.tier.label)) : '';
   $('personalityText').textContent = localized(spec.companion.personality);
   const grid = $('needGrid');
   grid.innerHTML = '';
@@ -154,10 +185,26 @@ function renderCompanion() {
     button.addEventListener('click', async () => {
       button.disabled = true;
       try {
-        companions[currentId] = await companionApi.act(currentId, action.id);
+        let bonus = 0;
+        if (action.id === FEED_ACTION[currentId]) {
+          // The action buttons live in the care sheet, which sits above the pet
+          // stage - close it first so the falling mini-game items are reachable.
+          closeCareSheet();
+          bonus = await playCatchGame(stage, {
+            emoji: FEED_EMOJI[currentId] || '🍎',
+            reducedMotion: prefs.get('reducedMotion', false),
+            lang: getLang()
+          });
+          if (bonus >= 3) announceUnlocks(recordEvent('perfectCatch'));
+        }
+        const next = await companionApi.act(currentId, action.id, bonus);
+        companions[currentId] = next;
         renderCompanion();
         pet.react(action.id === 'feed' ? 'feed' : action.id === 'hug' ? 'hug' : 'pet');
-        showBubble(`${label} ♥`);
+        showBubble(bonus ? `${label} ♥ +${bonus}` : `${label} ♥`);
+        announceUnlocks(recordEvent('interaction'));
+        syncTierStat();
+        handleTierUp(next.tierUp);
       } catch { showBubble(t('errSend')); }
       finally { button.disabled = false; }
     });
@@ -173,6 +220,7 @@ async function loadCompanions() {
     prefs.set('character', currentId);
     mountPet();
     renderCompanion();
+    syncTierStat();
   } catch { /* offline: keep the pet usable */ }
 }
 
@@ -184,6 +232,52 @@ function showBubble(text) {
   clearTimeout(bubbleTimer);
   bubbleTimer = setTimeout(() => { $('bubble').hidden = true; }, 2600);
 }
+
+/* ------------------------------------------------------------- gamification */
+// Called after every companions-state update so the achievement tracker's
+// "highest bond stage reached" stat stays current regardless of which flow
+// (action, gesture, chat, switch) advanced it.
+function syncTierStat() {
+  const tier = companions[currentId]?.tier;
+  if (tier) announceUnlocks(recordEvent('tier', tier.index));
+}
+
+function announceUnlocks(newlyUnlocked) {
+  if (!newlyUnlocked?.length) return;
+  newlyUnlocked.forEach((a, i) => {
+    setTimeout(() => showBubble(`🏆 ${t('achievementUnlocked').replace('{title}', localized(a.title))}`), i * 2800);
+  });
+}
+
+function handleTierUp(tierUp) {
+  if (!tierUp) return;
+  $('tierUpText').textContent = t('tierUpBody').replace('{tier}', localized(tierUp.label));
+  $('tierUpModal').hidden = false;
+  pet.express('love', 3200);
+  pet.burst('heart', null, 14);
+}
+
+function buildAchievementsGrid() {
+  const grid = $('achievementGrid');
+  grid.innerHTML = '';
+  for (const a of listAchievements()) {
+    const card = document.createElement('div');
+    card.className = `achievement-card${a.unlocked ? '' : ' is-locked'}`;
+    card.innerHTML = `<span class="achievement-icon">${a.unlocked ? a.icon : '🔒'}</span>
+      <span class="achievement-copy"><b>${localized(a.title)}</b><span>${a.unlocked ? localized(a.desc) : t('lockedAchievement')}</span></span>`;
+    grid.appendChild(card);
+  }
+}
+const achievementsSheet = $('achievementsSheet');
+$('achievementsBtn').addEventListener('click', () => {
+  resetSheetMotion(achievementsSheet);
+  buildAchievementsGrid();
+  achievementsSheet.hidden = false;
+});
+const closeAchievementsSheet = () => { resetSheetMotion(achievementsSheet); achievementsSheet.hidden = true; };
+achievementsSheet.addEventListener('click', (e) => { if (e.target.dataset.achievementsClose !== undefined) closeAchievementsSheet(); });
+
+$('tierUpModal').addEventListener('click', (e) => { if (e.target.dataset.tierClose !== undefined) $('tierUpModal').hidden = true; });
 
 stage.addEventListener('pet:stats', (e) => {
   $('barMood').style.width = `${e.detail.mood}%`;
@@ -275,6 +369,8 @@ $('confirmSwitchBtn').addEventListener('click', async () => {
     const state = await companionApi.select(switchCandidateId);
     companions = state.companions; currentId = state.activeId; prefs.set('character', currentId);
     mountPet(); renderCompanion(); closeSheet(); switchModal.hidden = true; pet.react('doubleTap'); showBubble(t('switchCharacterDone'));
+    announceUnlocks(recordEvent('switch'));
+    syncTierStat();
   } catch { showBubble(t('errSend')); }
   finally { button.disabled = false; }
 });
@@ -325,6 +421,7 @@ function attachSheetDismissDrag(target, close) {
 }
 attachSheetDismissDrag(sheet, closeSheet);
 attachSheetDismissDrag(careSheet, closeCareSheet);
+attachSheetDismissDrag(achievementsSheet, closeAchievementsSheet);
 
 /* ------------------------------------------------------------- art style */
 document.querySelectorAll('.seg-btn').forEach((btn) => {
@@ -380,7 +477,12 @@ const chat = new ChatView(
     petName: () => prefs.get('petName', '') || localized(getCharacter(currentId).name),
     onSend: () => {
       interactions.bumpIdle(); pet.express('happy', 1200);
-      companionApi.chat().then((state) => { companions = state.companions; currentId = state.activeId; renderCompanion(); }).catch(() => {});
+      announceUnlocks(recordEvent('chat'));
+      companionApi.chat().then((state) => {
+        companions = state.companions; currentId = state.activeId; renderCompanion();
+        syncTierStat();
+        handleTierUp(companions[currentId]?.tierUp);
+      }).catch(() => {});
     },
     onThinking: () => pet.thinking(),
     onReplyStart: () => pet.startTalking(),

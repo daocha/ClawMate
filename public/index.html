@@ -14,7 +14,7 @@
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" href="./icons/icon-192.png" type="image/png" sizes="192x192">
 <link rel="apple-touch-icon" href="./icons/icon-180.png">
-<link rel="stylesheet" href="./css/app.css?v=29">
+<link rel="stylesheet" href="./css/app.css?v=31">
 </head>
 <body>
 <div class="app" data-view="pet">
@@ -22,20 +22,32 @@
   <header class="topbar">
     <div class="brand">
       <span class="brand-dot"></span>
-      <span data-i18n="appName">ClawMate 伴靈</span>
+      <div class="brand-text">
+        <span data-i18n="appName">ClawMate 伴靈</span>
+        <span class="conn" id="conn" data-state="idle"><i></i><span id="connText" data-i18n="disconnected"></span></span>
+      </div>
     </div>
     <div class="topbar-actions">
-      <span class="conn" id="conn" data-state="idle"><i></i><span id="connText" data-i18n="disconnected"></span></span>
-      <button class="icon-btn" id="refreshBtn" data-i18n-label="refresh" data-i18n-title="refresh">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.2 8.4A7.8 7.8 0 1 0 20 13M19.2 4.8v3.9h-3.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
-      <button class="icon-btn" id="langBtn" data-i18n-label="language">
-        <span id="langLabel">EN</span>
+      <button class="icon-btn" id="achievementsBtn" data-i18n-label="achievements" data-i18n-title="achievements">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v4a4 4 0 0 1-8 0V4Z"/><path d="M8 5H5a2 2 0 0 0 0 4h2M16 5h3a2 2 0 0 1 0 4h-2M12 12v3M9 19h6M10 15h4v4h-4z" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
       <button class="icon-btn" id="themeBtn" data-i18n-label="theme">
         <svg viewBox="0 0 24 24" class="ico-sun" aria-hidden="true"><circle cx="12" cy="12" r="4.6"/><g stroke-linecap="round"><path d="M12 2.6v2.6M12 18.8v2.6M2.6 12h2.6M18.8 12h2.6M5.3 5.3l1.9 1.9M16.8 16.8l1.9 1.9M18.7 5.3l-1.9 1.9M7.2 16.8l-1.9 1.9"/></g></svg>
         <svg viewBox="0 0 24 24" class="ico-moon" aria-hidden="true"><path d="M20 14.2A8.2 8.2 0 0 1 9.8 4a8.4 8.4 0 1 0 10.2 10.2z"/></svg>
       </button>
+      <div class="topbar-more">
+        <button class="icon-btn" id="moreBtn" data-i18n-label="more" data-i18n-title="more" aria-expanded="false" aria-haspopup="true">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg>
+        </button>
+        <div class="topbar-more-menu" id="moreMenu" hidden>
+          <button class="icon-btn" id="langBtn" data-i18n-label="language">
+            <span id="langLabel">EN</span>
+          </button>
+          <button class="icon-btn" id="refreshBtn" data-i18n-label="refresh" data-i18n-title="refresh">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.2 8.4A7.8 7.8 0 1 0 20 13M19.2 4.8v3.9h-3.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -211,6 +223,7 @@
       <h3 data-i18n="careMenu"></h3>
       <section class="companion-panel" id="companionPanel" hidden>
         <div class="care-affinity"><span data-i18n="statAffinity"></span><b id="affinityValue">—</b><div class="bar"><i id="barAffinity" style="width:0%"></i></div></div>
+        <p class="tier-badge" id="tierBadge"></p>
         <p class="personality" id="personalityText"></p>
         <div class="need-grid" id="needGrid"></div>
         <div class="action-grid" id="actionGrid"></div>
@@ -226,6 +239,24 @@
       <p id="switchModalText"></p>
       <div class="modal-actions"><button class="btn ghost" type="button" data-switch-cancel data-i18n="cancel"></button><button class="btn primary" type="button" id="confirmSwitchBtn" data-i18n="confirmSwitch"></button></div>
     </section>
+  </div>
+  <div class="app-modal" id="tierUpModal" hidden role="dialog" aria-modal="true" aria-labelledby="tierUpTitle">
+    <div class="app-modal-backdrop" data-tier-close></div>
+    <section class="app-modal-card tier-up-card">
+      <span class="modal-icon">✨</span>
+      <h3 id="tierUpTitle" data-i18n="tierUpTitle"></h3>
+      <p id="tierUpText"></p>
+      <div class="modal-actions"><button class="btn primary" type="button" data-tier-close data-i18n="tierUpOk"></button></div>
+    </section>
+  </div>
+  <div class="sheet" id="achievementsSheet" hidden>
+    <div class="sheet-backdrop" data-achievements-close></div>
+    <div class="sheet-body">
+      <div class="sheet-grabber"></div>
+      <h3 data-i18n="achievements"></h3>
+      <p class="lede" data-i18n="achievementsHint" style="text-align:center;margin-top:-8px"></p>
+      <div class="achievement-grid" id="achievementGrid"></div>
+    </div>
   </div>
   <div class="app-modal" id="newSessionModal" hidden role="dialog" aria-modal="true" aria-labelledby="newSessionModalTitle">
     <div class="app-modal-backdrop" data-new-session-cancel></div>
@@ -254,6 +285,6 @@
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=28"></script>
+<script type="module" src="./js/app.js?v=30"></script>
 </body>
 </html>

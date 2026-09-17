@@ -4,6 +4,13 @@ import path from 'node:path';
 const DATA_DIR = path.resolve(process.env.DATA_DIR || './data');
 const FILE = path.join(DATA_DIR, 'settings.json');
 
+// How much the OpenClaw agent behind the pet chat is allowed to do to the
+// underlying workspace/machine, independent of whatever tool access it has
+// when driven from elsewhere. Casual pet chat has no business running with
+// the same authority as a coding session, so this defaults to the most
+// restrictive tier - see OPENCLAW_PERMISSION in .env.example.
+export const PERMISSION_MODES = ['read-only', 'guarded', 'workspace', 'full'];
+
 const DEFAULTS = {
   serverUrl: process.env.OPENCLAW_URL || '',
   token: process.env.OPENCLAW_TOKEN || '',
@@ -12,6 +19,7 @@ const DEFAULTS = {
   gatewayPath: '',
   sessionId: 'main',
   systemPrompt: '',
+  permission: PERMISSION_MODES.includes(process.env.OPENCLAW_PERMISSION) ? process.env.OPENCLAW_PERMISSION : 'read-only',
   lang: 'zh-TW',
   dndStart: '00:00',
   dndEnd: '10:00',
@@ -31,6 +39,7 @@ export function getConfig() {
     /* first boot - fall back to env defaults */
   }
   cache = { ...DEFAULTS, ...stored };
+  if (!PERMISSION_MODES.includes(cache.permission)) cache.permission = 'read-only';
   return cache;
 }
 
@@ -53,6 +62,7 @@ export function publicConfig() {
     gatewayPath: c.gatewayPath,
     sessionId: c.sessionId,
     systemPrompt: c.systemPrompt,
+    permission: c.permission,
     lang: c.lang,
     dndStart: c.dndStart,
     dndEnd: c.dndEnd,

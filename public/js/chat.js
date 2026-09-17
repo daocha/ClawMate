@@ -137,6 +137,10 @@ export class ChatView {
     if (!text || this.pending) return;
     this.input.value = '';
     this.addMessage('me', text);
+    // Snapshot prior turns before appending this one, so a fresh session
+    // (history just reset by startNewSession()) actually sends an empty
+    // history instead of one that already contains the message being sent.
+    const historyToSend = this.history.slice(-12);
     this.history.push({ role: 'user', text });
     this.persistEntry('user', text);
 
@@ -144,7 +148,7 @@ export class ChatView {
       type: 'chat',
       id: `m-${Date.now()}`,
       text,
-      history: this.history.slice(-12),
+      history: historyToSend,
       petName: this.opts.petName?.()
     });
     if (!sent) this.addMessage('pet', t('errSend'), { error: true });

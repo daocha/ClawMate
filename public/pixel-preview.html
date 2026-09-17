@@ -27,7 +27,7 @@
 <main id="cast"></main>
 <script type="module">
 import { CHARACTERS } from './js/characters.js';
-import { ACTIONS, WIDTH, HEIGHT, drawModel, poseAt } from './js/pixel-model.js?v=27';
+import { ACTIONS, WIDTH, HEIGHT, drawModel, poseAt } from './js/pixel-model.js?v=28';
 const labels = { idle: '待機', wave: '揮手', dance: '跳舞', hop: '跳躍', stretch: '伸懶腰', bow: '鞠躬', kick: '踢腿' };
 let action = 'idle', paused = false, started = performance.now(), progress = 0;
 const cast = CHARACTERS.filter(c => c.visible).map(spec => {

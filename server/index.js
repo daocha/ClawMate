@@ -3,10 +3,10 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import express from 'express';
 import { WebSocketServer } from 'ws';
-import { getConfig, saveConfig, publicConfig } from './config.js';
-import { sendMessage, testConnection, listAgents } from './openclaw.js';
+import { getConfig, saveConfig, publicConfig, PERMISSION_MODES } from './config.js';
+import { sendMessage, testConnection, listAgents, sessionKeyFor } from './openclaw.js';
 import * as push from './push.js';
-import { getCompanions, interact, rewardChat, selectCompanion, pendingNeedAlerts, markNeedAlertsSent, buildAlertNotification, isQuietNow } from './companions.js';
+import { getCompanions, interact, rewardChat, selectCompanion, pendingNeedAlerts, markNeedAlertsSent, buildAlertNotification, isQuietNow, buildPersonaPrompt, getActiveCompanionId } from './companions.js';
 import { isValidDeviceId, touchDevice } from './devices.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -45,7 +45,7 @@ app.use('/api', (req, res, next) => {
 
 app.get('/api/companions', (_req, res) => res.json({ ok: true, companions: getCompanions() }));
 app.post('/api/companions/:id/actions/:action', (req, res) => {
-  const companion = interact(req.params.id, req.params.action);
+  const companion = interact(req.params.id, req.params.action, req.body?.bonus);
   if (!companion) return res.status(404).json({ ok: false, error: 'Unknown companion action' });
   res.json({ ok: true, companion });
 });
@@ -58,10 +58,11 @@ app.post('/api/companions/select', (req, res) => {
 app.get('/api/settings', (_req, res) => res.json(publicConfig()));
 
 app.put('/api/settings', (req, res) => {
-  const allowed = ['serverUrl', 'token', 'agentId', 'transport', 'gatewayPath', 'sessionId', 'systemPrompt', 'lang', 'dndStart', 'dndEnd'];
+  const allowed = ['serverUrl', 'token', 'agentId', 'transport', 'gatewayPath', 'sessionId', 'systemPrompt', 'permission', 'lang', 'dndStart', 'dndEnd'];
   const patch = {};
   for (const key of allowed) if (key in req.body) patch[key] = String(req.body[key] ?? '').trim();
   if (patch.transport && !['openai', 'gateway'].includes(patch.transport)) delete patch.transport;
+  if (patch.permission && !PERMISSION_MODES.includes(patch.permission)) delete patch.permission;
   if (patch.lang && !['zh-TW', 'en'].includes(patch.lang)) delete patch.lang;
   if (patch.dndStart && !/^\d{1,2}:\d{2}$/.test(patch.dndStart)) delete patch.dndStart;
   if (patch.dndEnd && !/^\d{1,2}:\d{2}$/.test(patch.dndEnd)) delete patch.dndEnd;
@@ -88,6 +89,12 @@ app.get('/api/agents', async (_req, res) => {
 app.get('/api/push/key', (_req, res) => res.json({ publicKey: push.publicKey }));
 app.post('/api/push/subscribe', (req, res) => res.json({ ok: push.subscribe(req.body) }));
 app.post('/api/push/unsubscribe', (req, res) => res.json({ ok: push.unsubscribe(req.body?.endpoint) }));
+
+// Tracks which companion a given OpenClaw session was last primed with, so the
+// persona prompt is only (re-)sent right after `sessions.create` (new session)
+// or right after switching companion mid-session - not on every single turn.
+// In-memory is fine: a server restart just costs one harmless extra re-prime.
+const primedSessions = new Map();
 
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server, path: '/ws' });
@@ -132,9 +139,14 @@ wss.on('connection', (socket, req) => {
     send({ type: 'start', id });
 
     try {
+      const sessionKey = sessionKeyFor(cfg.agentId, cfg.sessionId);
+      const activeCompanionId = getActiveCompanionId();
+      const needsPersona = primedSessions.get(sessionKey) !== activeCompanionId;
+      const persona = needsPersona ? buildPersonaPrompt(cfg.lang) : '';
+      if (needsPersona) primedSessions.set(sessionKey, activeCompanionId);
       const full = await sendMessage(
         cfg,
-        { text, history: Array.isArray(msg.history) ? msg.history : [] },
+        { text, history: Array.isArray(msg.history) ? msg.history : [], persona },
         {
           onDelta: (delta) => send({ type: 'delta', id, text: delta }),
           onReplace: (whole) => send({ type: 'replace', id, text: whole })

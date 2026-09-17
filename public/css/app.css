@@ -86,28 +86,42 @@ button, input, select { font: inherit; color: inherit; }
 }
 
 .brand {
-  display: flex; align-items: center; gap: 8px;
+  display: flex; align-items: flex-start; gap: 8px; min-width: 0;
   font-weight: 700; letter-spacing: .01em;
 }
 
 .brand-dot {
+  flex: none; margin-top: 3px;
   width: 12px; height: 12px; border-radius: 50%;
   background: linear-gradient(140deg, var(--accent), var(--accent-2));
   box-shadow: 0 0 0 4px var(--tap);
 }
 
-.topbar-actions { display: flex; align-items: center; gap: 8px; }
+.brand-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.brand-text > span:first-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.topbar-actions { display: flex; align-items: center; gap: 8px; flex: none; }
 
 .conn {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-size: 12px; color: var(--text-dim);
-  padding: 4px 10px; border-radius: 999px;
+  align-self: flex-start;
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 10.5px; font-weight: 400; color: var(--text-dim);
+  padding: 2px 8px; border-radius: 999px;
   background: var(--surface); border: 1px solid var(--border);
 }
-.conn i { width: 7px; height: 7px; border-radius: 50%; background: var(--text-dim); }
+.conn i { width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim); }
 .conn[data-state="ok"] i { background: var(--ok); box-shadow: 0 0 0 3px rgba(47,174,122,.2); }
 .conn[data-state="wait"] i { background: var(--warn); animation: pulse 1.1s infinite; }
 .conn[data-state="err"] i { background: var(--err); }
+
+.topbar-more { position: relative; }
+.topbar-more-menu {
+  position: absolute; top: calc(100% + 8px); right: 0; z-index: 50;
+  display: flex; align-items: center; gap: 8px; padding: 8px;
+  border-radius: 16px; background: var(--surface-solid); border: 1px solid var(--border);
+  box-shadow: var(--shadow); animation: popIn .18s cubic-bezier(.3,1.5,.5,1);
+}
+.topbar-more-menu[hidden] { display: none; }
 
 .icon-btn {
   display: grid; place-items: center;
@@ -383,6 +397,7 @@ html[data-theme="dark"] .ico-moon { display: block; }
 .need-card span { display: flex; justify-content: space-between; color: var(--text-dim); }
 .need-card i { display: block; height: 4px; margin-top: 4px; background: var(--border); border-radius: 99px; overflow: hidden; }
 .need-card i::after { content: ''; display: block; width: var(--need); height: 100%; border-radius: inherit; background: var(--need-color, var(--ok)); }
+.tier-badge { margin: -4px 0 8px; font-size: 11px; font-weight: 700; letter-spacing: .02em; color: var(--accent); text-align: center; }
 .action-grid { display: flex; flex-wrap: wrap; gap: 6px; }
 .action-btn { border: 1px solid var(--border); background: var(--surface-solid); border-radius: 999px; padding: 6px 10px; cursor: pointer; font-size: 12px; }
 .action-btn:active { transform: scale(.94); background: var(--tap); }
@@ -560,6 +575,42 @@ html[data-theme="dark"] .ico-moon { display: block; }
 .app-modal { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 20px; }.app-modal[hidden] { display: none; }.app-modal-backdrop { position: absolute; inset: 0; background: rgba(20, 14, 24, .52); backdrop-filter: blur(4px); }.app-modal-card { position: relative; width: min(100%, 380px); padding: 24px; border: 1px solid var(--border); border-radius: 22px; background: var(--surface-solid); box-shadow: 0 24px 70px rgba(0,0,0,.28); text-align: center; animation: popIn .25s cubic-bezier(.22,1,.36,1); }.modal-icon { display: grid; place-items: center; width: 42px; height: 42px; margin: 0 auto 10px; border-radius: 50%; color: #fff; background: linear-gradient(140deg, var(--accent), var(--accent-2)); }.app-modal-card h3 { margin: 0 0 8px; font-size: 18px; }.app-modal-card p { margin: 0; color: var(--text-dim); font-size: 14px; line-height: 1.55; }.modal-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 20px; }.modal-actions .btn { min-width: 88px; }
 .preview-lightbox { padding: max(14px, env(safe-area-inset-top)) 14px; }.preview-lightbox-card { position: relative; width: min(100%, 620px); height: min(90dvh, 880px); border: 1px solid var(--border); border-radius: 22px; overflow: hidden; background: linear-gradient(145deg, var(--stage-a), var(--stage-b)); box-shadow: 0 24px 70px rgba(0,0,0,.35); animation: popIn .22s ease; }.preview-lightbox-card > div, .preview-lightbox-card svg { width: 100%; height: 100%; }.preview-close { position: absolute; z-index: 1; top: 10px; right: 10px; width: 36px; height: 36px; border: 1px solid var(--border); border-radius: 50%; background: var(--surface-solid); color: var(--text); font-size: 25px; line-height: 1; cursor: pointer; }
 #pairingScreen .app-modal-backdrop { background: var(--bg); opacity: .96; backdrop-filter: none; }
+
+/* ============================================================= mini-game */
+.minigame-overlay {
+  position: absolute; inset: 0; z-index: 5; overflow: hidden;
+  background: rgba(20, 14, 24, .06); animation: fade .18s ease;
+}
+.minigame-overlay.is-done { opacity: 0; transition: opacity .2s ease; }
+.minigame-hint {
+  position: absolute; top: 6%; left: 50%; transform: translateX(-50%);
+  padding: 7px 14px; border-radius: 999px; white-space: nowrap;
+  background: var(--surface-solid); border: 1px solid var(--border); box-shadow: var(--shadow);
+  font-size: 13px; font-weight: 600;
+}
+.minigame-item {
+  position: absolute; top: -14%; font-size: 30px; line-height: 1;
+  border: 0; background: none; padding: 6px; cursor: pointer;
+  animation-name: minigameFall; animation-timing-function: linear; animation-fill-mode: forwards;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,.18));
+}
+.minigame-item.is-caught { animation: minigameCatch .2s ease forwards; }
+@keyframes minigameFall { from { top: -14%; } to { top: 96%; } }
+@keyframes minigameCatch { to { transform: scale(1.6); opacity: 0; } }
+
+/* ========================================================= tier-up modal */
+.tier-up-card .modal-icon { background: linear-gradient(140deg, #ffc861, var(--accent)); }
+
+/* ========================================================== achievements */
+.achievement-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 9px; }
+.achievement-card {
+  display: flex; gap: 9px; align-items: flex-start; padding: 9px 10px; border-radius: 14px;
+  border: 1px solid var(--border); background: var(--surface-solid);
+}
+.achievement-card.is-locked { opacity: .45; filter: grayscale(1); }
+.achievement-icon { font-size: 22px; line-height: 1; }
+.achievement-copy b { display: block; font-size: 12.5px; }
+.achievement-copy span { display: block; font-size: 10.5px; color: var(--text-dim); margin-top: 2px; }
 .pairing-code, .pairing-cmd { display: block; margin: 14px 0 0; padding: 10px 12px; border-radius: 12px; background: var(--surface); border: 1px solid var(--border); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; word-break: break-all; text-align: left; color: var(--text); }
 .pairing-wait { margin-top: 14px !important; font-size: 12px !important; }
 
