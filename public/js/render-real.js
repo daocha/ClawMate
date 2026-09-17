@@ -19,6 +19,12 @@ export function renderReal(spec, presentation = 'crop') {
   };
   const portraits = presentation === 'full' ? fullPortraits : croppedPortraits;
   const image = `./assets/hd/${portraits[spec.id] || `${spec.id}.png`}`;
+  if (human && presentation === 'stage') {
+    return `<div class="pet-stage-art pet-real-stage" role="img" aria-label="${spec.name.en}">
+  <div class="pet-root"><img class="pet-stage-image pet-photo pet-photo--portrait" src="${image}" alt="" draggable="false"></div>
+</div>`;
+  }
+
   const frame = human
     ? { x: 35, y: 35, width: 930, height: 1380, shadowY: null, shadowRx: 0 }
     : { x: 40, y: 150, width: 920, height: 1160, shadowY: 1320, shadowRx: 260 };

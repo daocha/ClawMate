@@ -12,21 +12,9 @@ function renderPixelSprite(spec, presentation) {
   const human = spec.archetype === 'humanoid';
   const cropHuman = human && presentation !== 'full';
   const viewBox = cropHuman ? '0 0 1000 960' : '0 0 1000 1500';
-  const uid = `pixel-${spec.id}`;
-  const headBottom = human ? 620 : 700;
-  const bodyTop = human ? 500 : 610;
-  const armX = spec.id === 'momo' ? 575 : spec.id === 'aria' ? 600 : 540;
-  const armY = human ? 340 : 500;
   return `<svg class="pet-svg pet-svg--pixel${cropHuman ? ' pet-svg--portrait-crop' : ''}" viewBox="${viewBox}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${spec.name.en}" preserveAspectRatio="xMidYMid meet">
-  <defs>
-    <clipPath id="${uid}-head"><rect x="0" y="0" width="1000" height="${headBottom}"/></clipPath>
-    <clipPath id="${uid}-body"><rect x="0" y="${bodyTop}" width="1000" height="${1500 - bodyTop}"/></clipPath>
-    <clipPath id="${uid}-arm"><rect x="${armX}" y="${armY}" width="${1000 - armX}" height="760"/></clipPath>
-  </defs>
   <g class="pet-root">
-    <g class="pet-body pet-pixel-body" clip-path="url(#${uid}-body)"><image class="pet-pixel-art" href="${PIXEL_SPRITES[spec.id]}" x="0" y="0" width="1000" height="1500" preserveAspectRatio="xMidYMid meet"/></g>
-    <g class="pet-pixel-arm" clip-path="url(#${uid}-arm)"><image class="pet-pixel-art" href="${PIXEL_SPRITES[spec.id]}" x="0" y="0" width="1000" height="1500" preserveAspectRatio="xMidYMid meet"/></g>
-    <g class="pet-head pet-pixel-head" clip-path="url(#${uid}-head)" style="transform-origin:500px ${Math.round(headBottom * .72)}px"><image class="pet-pixel-art" href="${PIXEL_SPRITES[spec.id]}" x="0" y="0" width="1000" height="1500" preserveAspectRatio="xMidYMid meet"/></g>
+    <image class="pet-pixel-art" href="${PIXEL_SPRITES[spec.id]}" x="0" y="0" width="1000" height="1500" preserveAspectRatio="xMidYMin meet"/>
   </g>
 </svg>`;
 }

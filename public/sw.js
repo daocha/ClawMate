@@ -1,11 +1,11 @@
-const CACHE = 'clawmate-v15';
+const CACHE = 'clawmate-v24';
 const SCOPE_PATH = new URL(self.registration.scope).pathname.replace(/\/?$/, '/');
 const API_PATH = `${SCOPE_PATH}api/`;
 const SHELL = [
-  './', './index.html', './css/app.css', './manifest.webmanifest',
-  './js/app.js', './js/pet.js', './js/chat.js', './js/settings.js', './js/i18n.js', './js/companions.js',
+  './', './index.html', './css/app.css?v=24', './manifest.webmanifest',
+  './js/app.js?v=24', './js/pet.js?v=24', './js/chat.js', './js/settings.js', './js/i18n.js', './js/companions.js',
   './js/urls.js',
-  './js/characters.js', './js/face.js', './js/render-real.js', './js/render-chibi.js', './js/render-pixel.js', './js/interactions.js',
+  './js/characters.js', './js/face.js', './js/render-real.js?v=24', './js/render-chibi.js?v=24', './js/render-pixel.js', './js/interactions.js',
   './assets/hd/momo-young-v2.png', './assets/hd/momo-knee-v4.png', './assets/hd/aria-knee-v3.png', './assets/hd/aria-s-curve-full-v5.png', './assets/hd/mochi-real-longhair-v5.png', './assets/hd/mochi.png', './assets/hd/coco.png',
   './assets/hd/luna.png', './assets/hd/kiko.png', './assets/hd/bao.png', './assets/hd/ember.png',
   './assets/hd/pino.png', './assets/hd/nova.png',

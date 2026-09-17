@@ -47,6 +47,9 @@ export function renderChibi(spec, presentation = 'crop') {
   if (spec.visible) {
     const images = { momo: 'momo-painted-v4.png', aria: 'aria-painted-v4.png' };
     const image = `./assets/chibi/${images[spec.id] || `${spec.id}-painted-v2.png`}`;
+    if (presentation === 'stage') {
+      return `<div class="pet-stage-art pet-chibi-stage" role="img" aria-label="${esc(spec.name.en)}"><div class="pet-root"><img class="pet-stage-image pet-chibi-art" src="${image}" alt="" draggable="false"></div></div>`;
+    }
     const cropHuman = spec.archetype === 'humanoid' && presentation !== 'full';
     const viewBox = cropHuman ? '0 0 1000 940' : VIEWBOX;
     return `<svg class="pet-svg pet-svg--chibi pet-svg--painted${cropHuman ? ' pet-svg--portrait-crop' : ''}" viewBox="${viewBox}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${esc(spec.name.en)}" preserveAspectRatio="xMidYMid meet"><defs><filter id="chibi-soft-${esc(spec.id)}" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="18" stdDeviation="14" flood-opacity=".17"/></filter></defs><g class="pet-root" filter="url(#chibi-soft-${esc(spec.id)})"><image class="pet-chibi-art" href="${image}" x="18" y="0" width="964" height="1400" preserveAspectRatio="xMidYMid meet"/></g></svg>`;

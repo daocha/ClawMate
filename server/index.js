@@ -16,7 +16,11 @@ const app = express();
 app.use(express.json({ limit: '256kb' }));
 app.use(express.static(path.join(__dirname, '..', 'public'), {
   setHeaders: (res, filePath) => {
-    if (filePath.endsWith('sw.js')) res.setHeader('Cache-Control', 'no-cache');
+    // App-shell code must be revalidated so a phone controlled by an older
+    // service worker cannot keep an obsolete SVG crop implementation.
+    if (/\.(?:html|js|css)$/.test(filePath)) {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    }
   }
 }));
 

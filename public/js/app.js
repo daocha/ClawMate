@@ -1,8 +1,8 @@
 import { CHARACTERS, getCharacter } from './characters.js';
-import { renderReal } from './render-real.js';
-import { renderChibi } from './render-chibi.js';
+import { renderReal } from './render-real.js?v=24';
+import { renderChibi } from './render-chibi.js?v=24';
 import { renderPixel } from './render-pixel.js';
-import { Pet } from './pet.js';
+import { Pet } from './pet.js?v=24';
 import { attachInteractions } from './interactions.js';
 import { companionApi, needLabel, actionLabel } from './companions.js';
 import { PetSocket, ChatView } from './chat.js';

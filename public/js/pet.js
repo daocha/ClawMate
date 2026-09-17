@@ -1,5 +1,5 @@
-import { renderReal } from './render-real.js';
-import { renderChibi } from './render-chibi.js';
+import { renderReal } from './render-real.js?v=24';
+import { renderChibi } from './render-chibi.js?v=24';
 import { renderPixel } from './render-pixel.js';
 import { mouthPath, EXPRESSIONS, BROW_POSE } from './face.js';
 
@@ -31,8 +31,8 @@ export class Pet {
     const svg = mode === 'pixel'
       ? renderPixel(spec)
       : mode === 'chibi'
-        ? renderChibi(spec)
-        : renderReal(spec, 'crop');
+        ? renderChibi(spec, 'stage')
+        : renderReal(spec, 'stage');
     const host = this.stage.querySelector('.pet-host') || (() => {
       const d = document.createElement('div');
       d.className = 'pet-host';
@@ -41,7 +41,12 @@ export class Pet {
     })();
     host.innerHTML = svg;
     this.host = host;
-    this.svg = host.querySelector('svg');
+    this.svg = host.querySelector('svg, .pet-stage-art');
+    // Raster HD portraits use a native <img>; the remaining SVG styles keep
+    // spare aspect-ratio space below the artwork.
+    if (this.svg.tagName.toLowerCase() === 'svg') {
+      this.svg.setAttribute('preserveAspectRatio', 'xMidYMin meet');
+    }
     this.root = this.svg.querySelector('.pet-root');
     this.head = this.svg.querySelector('.pet-head');
     this.eyes = [...this.svg.querySelectorAll('.pet-eye')];
@@ -169,17 +174,6 @@ export class Pet {
     setTimeout(() => this.root.classList.remove(cls), ms);
   }
 
-  animatePart(selector, cls, ms = 700) {
-    if (this.reducedMotion || !this.svg) return;
-    const parts = [...this.svg.querySelectorAll(selector)];
-    parts.forEach((part) => {
-      part.classList.remove(cls);
-      void part.getBoundingClientRect();
-      part.classList.add(cls);
-      setTimeout(() => part.classList.remove(cls), ms);
-    });
-  }
-
   touchZone(at) {
     if (!at || !this.svg) return 'body';
     const box = this.svg.getBoundingClientRect();
@@ -193,62 +187,40 @@ export class Pet {
 
   react(kind, at) {
     this.wake();
-    // Pixel sprites are deliberately split into head, body and arm layers.
-    // A tap therefore feels different depending on where the user touches.
+    // Pixel art remains one connected sprite. Touch zones select a different
+    // whole-body reaction instead of pulling independently clipped limbs apart.
     if (kind === 'poke' && this.mode === 'pixel') {
       const zone = this.touchZone(at);
       if (zone === 'head') {
         this.adjust(+3, 0); this.express('happy', 1500); this.animate('fx-bounce', 620);
-        this.animatePart('.pet-pixel-head', 'fx-pixel-head-pat', 700);
-        this.animatePart('.pet-pixel-arm', 'fx-pixel-wave', 560);
         this.burst('heart', at, 3); this.onReact('reactPet'); return;
       }
       if (zone === 'arm') {
         this.adjust(+2, 0); this.express('excited', 1500); this.animate('fx-spin', 760);
-        this.animatePart('.pet-pixel-arm', 'fx-pixel-wave', 900);
-        this.animatePart('.pet-pixel-body', 'fx-pixel-lean', 760);
         this.burst('star', at, 3); this.onReact('reactSwipe'); return;
       }
       if (zone === 'feet') {
         this.adjust(+2, -1); this.express('surprised', 900); this.animate('fx-bounce', 650);
-        this.animatePart('.pet-pixel-body', 'fx-pixel-hop', 650);
-        this.animatePart('.pet-pixel-head', 'fx-pixel-nod', 560);
         this.burst('spark', at, 2); this.onReact('reactPoke'); return;
       }
       this.adjust(+3, 0); this.express('happy', 1400); this.animate('fx-squish', 800);
-      this.animatePart('.pet-pixel-body', 'fx-pixel-wiggle', 800);
-      this.animatePart('.pet-pixel-head', 'fx-pixel-nod', 620);
-      this.animatePart('.pet-pixel-arm', 'fx-pixel-wave', 620);
       this.burst('heart', at, 2); this.onReact('reactPet'); return;
     }
     switch (kind) {
       case 'pet':
         this.adjust(+4, 0); this.express('happy', 1800); this.animate('fx-nuzzle', 900);
-        if (this.mode === 'pixel') {
-          this.animatePart('.pet-pixel-body', 'fx-pixel-lean', 780);
-          this.animatePart('.pet-pixel-head', 'fx-pixel-nod', 680);
-        }
         this.burst('heart', at, 3); this.onReact('reactPet'); break;
       case 'poke':
         this.adjust(-2, 0); this.express('surprised', 1100); this.animate('fx-shake', 520);
         this.burst('spark', at, 2); this.onReact('reactPoke'); break;
       case 'swipe':
         this.adjust(+3, -3); this.express('excited', 1600); this.animate('fx-spin', 900);
-        if (this.mode === 'pixel') {
-          this.animatePart('.pet-pixel-arm', 'fx-pixel-wave', 900);
-          this.animatePart('.pet-pixel-body', 'fx-pixel-wiggle', 850);
-        }
         this.burst('star', at, 5); this.onReact('reactSwipe'); break;
       case 'hug':
         this.adjust(+8, +2); this.express('love', 2600); this.animate('fx-squish', 1200);
-        if (this.mode === 'pixel') {
-          this.animatePart('.pet-pixel-body', 'fx-pixel-cuddle', 1100);
-          this.animatePart('.pet-pixel-head', 'fx-pixel-nod', 800);
-        }
         this.burst('heart', at, 6); this.onReact('reactHug'); break;
       case 'feed':
         this.adjust(+6, +10); this.express('happy', 2200); this.animate('fx-bounce', 900);
-        if (this.mode === 'pixel') this.animatePart('.pet-pixel-body', 'fx-pixel-hop', 760);
         this.burst('sparkle', at, 4); this.onReact('reactFeed'); break;
       case 'doubleTap':
         this.adjust(+5, 0); this.express('love', 2000); this.animate('fx-bounce', 800);
