@@ -90,17 +90,77 @@ const DIALOGUE = {
   }
 };
 
+// A handful of hand-written lines for each companion's one-off tier-3 action
+// (see COMPANION_DEFS in server/companions.js) - these are rare, momentous
+// clicks, so they get their own small voice instead of the generic pool.
+const SPECIAL_LINES = {
+  momo: {
+    soulmate: {
+      'zh-TW': ['你知道嗎，我想跟你說，遇見你是我最幸運的事。', '從今以後，不管發生什麼，我都想留在你身邊。', '謝謝你一直都在，我是認真的喜歡你。'],
+      en: ["You know what? Meeting you was the luckiest thing that's ever happened to me.", 'From now on, no matter what happens, I want to stay by your side.', 'Thank you for always being here - I mean it, I really like you.']
+    }
+  },
+  aria: {
+    confession: {
+      'zh-TW': ['我很少說這些，但今晚想讓你知道——你對我來說很重要。', '如果可以，我想繼續留在你的生活裡，很久很久。', '謝謝你讓我卸下防備，這種感覺，我很珍惜。'],
+      en: ['I rarely say things like this, but tonight I want you to know - you matter to me, deeply.', "If I could, I'd want to stay in your life for a very long time.", "Thank you for letting me let my guard down. I don't take that lightly."]
+    }
+  },
+  mochi: {
+    purr: {
+      'zh-TW': ['呼嚕嚕…好啦，我承認，你是我最信任的人。', '難得這麼放鬆，都是因為有你在。', '呼嚕…別走開，再讓我這樣窩一下。'],
+      en: ["Purrrr... fine, I admit it, you're the one I trust most.", "I'm this relaxed because you're here, you know.", "Purr... don't move, just let me stay curled up like this a little longer."]
+    }
+  },
+  coco: {
+    loyalty: {
+      'zh-TW': ['不管你去哪裡，我都想跟著你，永遠！', '你是我最重要的人類，我會一直陪著你！', '汪！只要有你在，我什麼都不怕！'],
+      en: ['Wherever you go, I want to follow - forever!', "You're my favorite human in the whole world, and I'll always be by your side!", "Woof! As long as you're here, I'm not afraid of anything!"]
+    }
+  }
+};
+
+// Shown when an action call comes back on cooldown (see interact() in
+// server/companions.js) - a small in-character "not yet" instead of the
+// generic fallback string in i18n.js.
+const COOLDOWN_LINES = {
+  momo: {
+    'zh-TW': ['等一下啦，剛剛才做過耶～', '再等我一下下，好不好？', '這個效果還在呢，先休息一下啦'],
+    en: ["Wait a sec, we just did that~", 'Give me just a little longer, okay?', "That's still working its magic, let's pause for now"]
+  },
+  aria: {
+    'zh-TW': ['這個剛才才進行過，稍等一下吧。', '讓我們留一點時間，慢慢來。', '不急，稍後再試一次也不遲。'],
+    en: ['We only just did that - let\'s give it a moment.', "Let's leave a little space before we try again.", 'No rush, it can wait a little longer.']
+  },
+  mochi: {
+    'zh-TW': ['哼，才剛做過而已，急什麼。', '喵～還不是時候啦。', '再等一下，不然不理你囉。'],
+    en: ["Hmph, we just did that, what's the rush.", 'Meow~ not quite time yet.', 'Wait a little, or I might just ignore you.']
+  },
+  coco: {
+    'zh-TW': ['嘿！剛剛才做過，等我一下嘛！', '汪汪！先讓我喘口氣！', '再等一下下就可以囉！'],
+    en: ['Hey! We just did that, give me a sec!', 'Woof woof! Let me catch my breath first!', 'Just a little longer and we can again!']
+  }
+};
+
 function pick(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-export function pickReactionLine(companionId, lang) {
-  const entry = DIALOGUE[companionId];
-  if (!entry) return '';
+export function pickReactionLine(companionId, lang, actionId) {
   const zh = lang === 'zh-TW';
   const key = zh ? 'zh-TW' : 'en';
+  const special = actionId ? SPECIAL_LINES[companionId]?.[actionId]?.[key] : null;
+  if (special) return pick(special);
+  const entry = DIALOGUE[companionId];
+  if (!entry) return '';
   const tag = pick(entry.tags[key]);
   const line = pick(entry.lines[key]);
   if (!tag) return line;
   return zh ? `${tag}，${line}` : `${tag} ${line}`;
+}
+
+export function pickCooldownLine(companionId, lang) {
+  const entry = COOLDOWN_LINES[companionId];
+  if (!entry) return '';
+  return pick(entry[lang === 'zh-TW' ? 'zh-TW' : 'en']);
 }

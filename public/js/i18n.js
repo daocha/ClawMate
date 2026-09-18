@@ -64,7 +64,8 @@ const DICT = {
     tierStage: '關係階段：{tier}',
     achievements: '成就', achievementsHint: '透過互動、聊天與小遊戲解鎖成就吧！', achievementUnlocked: '解鎖成就：{title}',
     lockedAchievement: '尚未解鎖',
-    actionCooldown: '牠現在還在回味剛才，晚點再來吧～', actionCooldownHint: '還需要 {min} 分鐘才能再做這個互動'
+    actionCooldown: '牠現在還在回味剛才，晚點再來吧～', actionCooldownHint: '還需要 {min} 分鐘才能再做這個互動',
+    dailyCheckIn: '今天也謝謝你來看我，已經連續 {streak} 天了！'
   },
   en: {
     appName: 'ClawMate',
@@ -129,7 +130,8 @@ const DICT = {
     tierStage: 'Bond stage: {tier}',
     achievements: 'Achievements', achievementsHint: 'Unlock badges by interacting, chatting and playing mini-games!', achievementUnlocked: 'Achievement unlocked: {title}',
     lockedAchievement: 'Not yet unlocked',
-    actionCooldown: "Still savoring that - try again in a bit~", actionCooldownHint: 'Ready again in {min} min'
+    actionCooldown: "Still savoring that - try again in a bit~", actionCooldownHint: 'Ready again in {min} min',
+    dailyCheckIn: "Thanks for stopping by today - {streak} day streak!"
   }
 };
 

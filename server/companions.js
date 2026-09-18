@@ -311,12 +311,41 @@ function payload(id, state, now, tierUp = null, cooldown = null) {
   };
 }
 
+const DAILY_CHECKIN_BONUS = 3;
+
+function dateKey(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+// A once-per-calendar-day "welcome back" bonus, deliberately separate from
+// the interact()/chat gain budgets. It pays out at most once no matter how
+// many times the app is opened or refreshed that day, so - unlike the click
+// economy those budgets are guarding against - there is nothing to grind
+// here: the only way to get more of it is to come back on a later day. That
+// is the point: this rewards spacing visits out, not piling them up.
+function advanceCheckIn(now, state) {
+  const data = load();
+  const today = dateKey(now);
+  data._checkIn ||= { date: null, streak: 0, longestStreak: 0 };
+  if (data._checkIn.date === today) {
+    return { streak: data._checkIn.streak, longestStreak: data._checkIn.longestStreak, isNew: false };
+  }
+  const yesterday = dateKey(new Date(now.getTime() - 86_400_000));
+  data._checkIn.streak = data._checkIn.date === yesterday ? data._checkIn.streak + 1 : 1;
+  data._checkIn.longestStreak = Math.max(data._checkIn.longestStreak, data._checkIn.streak);
+  data._checkIn.date = today;
+  state.affinity = clamp(state.affinity + DAILY_CHECKIN_BONUS);
+  return { streak: data._checkIn.streak, longestStreak: data._checkIn.longestStreak, isNew: true };
+}
+
 export function getCompanions() {
   const now = new Date();
   const id = activeId();
-  const result = { [id]: payload(id, advance(id, now), now) };
+  const state = advance(id, now);
+  const checkIn = advanceCheckIn(now, state);
+  const result = { [id]: payload(id, state, now) };
   save();
-  return { activeId: id, companions: result };
+  return { activeId: id, companions: result, checkIn };
 }
 
 // `bonus` (0-3) comes from the optional tap-timing mini-game the client can
@@ -466,10 +495,19 @@ export function markNeedAlertsSent(keys) {
   save();
 }
 
-export function buildAlertNotification(keys, lang) {
+// Reuses the same per-companion `craving` line as buildPersonaPrompt() so the
+// push notification reads like the pet itself nudging you, in its own voice,
+// instead of a generic system alert - falls back to the old generic copy for
+// an unknown id.
+export function buildAlertNotification(id, keys, lang) {
+  const def = COMPANION_DEFS[id];
   const zh = lang === 'zh-TW';
-  const labels = keys.map((key) => needLabel(key, lang));
+  const key = zh ? 'zh-TW' : 'en';
+  const labels = keys.map((k) => needLabel(k, lang));
   const list = labels.join(zh ? '、' : ', ');
+  const name = def?.name?.[key];
+  const body = def?.craving?.[key]?.(list);
+  if (name && body) return { title: zh ? `${name} 想你了` : `${name} misses you`, body };
   return zh
     ? { title: 'ClawMate 提醒', body: `${list} 已經進入紅色警戒，快回來照顧一下吧！` }
     : { title: 'ClawMate reminder', body: `${list} ${labels.length > 1 ? 'are' : 'is'} in the red zone — go check on your companion!` };

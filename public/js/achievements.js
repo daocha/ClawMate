@@ -42,10 +42,16 @@ export const ACHIEVEMENTS = [
   { id: 'tier-bonded', icon: '💎', title: { 'zh-TW': '心靈羈絆', en: 'Soulbound' }, desc: { 'zh-TW': '親密度進入「羈絆」階段', en: 'Reach the Soulbound bond stage' }, check: (s) => s.maxTier >= 3 },
   { id: 'perfect-catch', icon: '✨', title: { 'zh-TW': '完美接住', en: 'Perfect Catch' }, desc: { 'zh-TW': '在小遊戲中滿分接住', en: 'Get a perfect score in the catch mini-game' }, check: (s) => s.perfectCatches >= 1 },
   { id: 'switcher', icon: '🔄', title: { 'zh-TW': '博愛的心', en: 'Making New Friends' }, desc: { 'zh-TW': '切換過陪伴角色', en: 'Switch to a different companion' }, check: (s) => s.switches >= 1 },
+  // Streak length comes from the server's once-per-calendar-day check-in (see
+  // advanceCheckIn in server/companions.js) - it can't be inflated by opening
+  // the app repeatedly in one day, only by coming back on separate days.
+  { id: 'streak-3', icon: '📅', title: { 'zh-TW': '連續三天', en: 'Three-Day Streak' }, desc: { 'zh-TW': '連續 3 天打開 ClawMate', en: 'Open ClawMate on 3 days in a row' }, check: (s) => s.maxStreak >= 3 },
+  { id: 'streak-7', icon: '🗓️', title: { 'zh-TW': '一週不缺席', en: 'Full Week' }, desc: { 'zh-TW': '連續 7 天打開 ClawMate', en: 'Open ClawMate on 7 days in a row' }, check: (s) => s.maxStreak >= 7 },
+  { id: 'streak-30', icon: '🏵️', title: { 'zh-TW': '月度陪伴', en: 'A Month Together' }, desc: { 'zh-TW': '連續 30 天打開 ClawMate', en: 'Open ClawMate on 30 days in a row' }, check: (s) => s.maxStreak >= 30 },
   ...PER_COMPANION_ACHIEVEMENTS
 ];
 
-const DEFAULT_STATS = { interactions: 0, chats: 0, maxTier: 0, perfectCatches: 0, switches: 0, perCompanionMaxTier: {}, actionsUsed: {} };
+const DEFAULT_STATS = { interactions: 0, chats: 0, maxTier: 0, perfectCatches: 0, switches: 0, maxStreak: 0, perCompanionMaxTier: {}, actionsUsed: {} };
 
 function loadStats() {
   try { return { ...DEFAULT_STATS, ...JSON.parse(localStorage.getItem(STATS_KEY)) }; }
@@ -61,11 +67,13 @@ function saveUnlocked() { try { localStorage.setItem(UNLOCKED_KEY, JSON.stringif
 const stats = loadStats();
 const unlocked = new Set(loadUnlocked());
 
-// type: 'interaction' | 'chat' | 'tier' | 'perfectCatch' | 'switch' | 'actionUsed'
+// type: 'interaction' | 'chat' | 'tier' | 'perfectCatch' | 'switch' | 'actionUsed' | 'streak'
 // For 'tier', value is { id, index } - index is the tier reached, kept as a
 // running max both globally and per companion id.
 // For 'actionUsed', value is { id, actionId } - actionId is recorded once per
 // companion so "tried every interaction" can be checked later.
+// For 'streak', value is the server-computed daily check-in streak length
+// (see advanceCheckIn in server/companions.js), kept as a running max.
 export function recordEvent(type, value = 1) {
   if (type === 'interaction') stats.interactions += value;
   else if (type === 'chat') stats.chats += value;
@@ -74,6 +82,7 @@ export function recordEvent(type, value = 1) {
     stats.perCompanionMaxTier[value.id] = Math.max(stats.perCompanionMaxTier[value.id] || 0, value.index);
   } else if (type === 'perfectCatch') stats.perfectCatches += value;
   else if (type === 'switch') stats.switches += value;
+  else if (type === 'streak') stats.maxStreak = Math.max(stats.maxStreak, value);
   else if (type === 'actionUsed') {
     const used = stats.actionsUsed[value.id] || [];
     if (!used.includes(value.actionId)) stats.actionsUsed[value.id] = [...used, value.actionId];

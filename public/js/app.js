@@ -10,7 +10,7 @@ import { PetSocket, ChatView } from './chat.js';
 import { initSettings, startNewSession } from './settings.js';
 import { playCatchGame } from './minigame.js';
 import { recordEvent, listAchievements } from './achievements.js';
-import { pickReactionLine } from './dialogue.js';
+import { pickReactionLine, pickCooldownLine } from './dialogue.js';
 import { setLang, getLang, t, localized, applyTranslations } from './i18n.js';
 import { getDeviceId } from './device.js';
 import { appUrl } from './urls.js';
@@ -145,7 +145,7 @@ const pet = new Pet(stage, {
       // rather than nag on every rapid tap; the pet's own tap animation is
       // still the tactile feedback either way.
       if (next.cooldown) return;
-      showBubble(pickReactionLine(currentId, getLang()));
+      showBubble(pickReactionLine(currentId, getLang(), action));
       announceUnlocks(recordEvent('interaction'));
       announceUnlocks(recordEvent('actionUsed', { id: currentId, actionId: action }));
       syncTierStat();
@@ -226,10 +226,11 @@ function renderCompanion() {
         companions[currentId] = next;
         renderCompanion();
         if (next.cooldown) {
-          showBubble(t('actionCooldown'));
+          showBubble(pickCooldownLine(currentId, getLang()) || t('actionCooldown'));
         } else {
           pet.react(action.id === 'feed' ? 'feed' : action.id === 'hug' ? 'hug' : 'pet');
-          showBubble(bonus ? `${pickReactionLine(currentId, getLang())} ♥ +${bonus}` : pickReactionLine(currentId, getLang()));
+          const line = pickReactionLine(currentId, getLang(), action.id);
+          showBubble(bonus ? `${line} ♥ +${bonus}` : line);
           announceUnlocks(recordEvent('interaction'));
           announceUnlocks(recordEvent('actionUsed', { id: currentId, actionId: action.id }));
           syncTierStat();
@@ -251,7 +252,17 @@ async function loadCompanions() {
     mountPet();
     renderCompanion();
     syncTierStat();
+    handleCheckIn(state.checkIn);
   } catch { /* offline: keep the pet usable */ }
+}
+
+// The server grants this at most once per calendar day (see advanceCheckIn in
+// server/companions.js), so this only ever fires on the first load/refresh of
+// a new day - never from clicking around within the same visit.
+function handleCheckIn(checkIn) {
+  if (!checkIn?.isNew) return;
+  announceUnlocks(recordEvent('streak', checkIn.streak));
+  showBubble(t('dailyCheckIn').replace('{streak}', String(checkIn.streak)));
 }
 
 let bubbleTimer = null;
