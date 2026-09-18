@@ -28,8 +28,12 @@ const AFFINITY_TIERS = [
 ];
 
 function tierIndex(affinity) {
+  // Round first so the tier boundary always matches the affinity number the
+  // client actually displays (avoids e.g. a displayed "75" still reading as
+  // the lower tier because the stored float was 74.6).
+  const rounded = round(affinity);
   let idx = 0;
-  AFFINITY_TIERS.forEach((tier, i) => { if (affinity >= tier.min) idx = i; });
+  AFFINITY_TIERS.forEach((tier, i) => { if (rounded >= tier.min) idx = i; });
   return idx;
 }
 
@@ -144,7 +148,11 @@ function save() {
   fs.writeFileSync(FILE, JSON.stringify(cache, null, 2));
 }
 
-const clamp = (value) => Math.max(0, Math.min(100, Math.round(value)));
+// Kept unrounded in storage so slow decay/penalty ticks (e.g. the 5-minute
+// need-alert timer) accumulate correctly instead of losing sub-1 remainders
+// every time lastUpdatedAt is stamped forward. Only `round` for display.
+const clamp = (value) => Math.max(0, Math.min(100, value));
+const round = (value) => Math.round(value);
 
 function awakeHoursBetween(from, to) {
   const { start: sleepStart, end: sleepEnd } = quietWindowMinutes();
@@ -209,7 +217,7 @@ function advance(id, now) {
     state.neglectPenaltyHours += newPenaltyHours;
   }
   const unmet = Object.values(state.needs).filter((value) => value < 35).length;
-  if (unmet) state.affinity = clamp(state.affinity - Math.ceil(unmet * elapsed * 0.8));
+  if (unmet) state.affinity = clamp(state.affinity - unmet * elapsed * 0.8);
   state.lastUpdatedAt = now.toISOString();
   return state;
 }
@@ -219,8 +227,8 @@ function payload(id, state, tierUp = null) {
   const tier = tierInfo(state.affinity);
   return {
     id,
-    affinity: state.affinity,
-    needs: state.needs,
+    affinity: round(state.affinity),
+    needs: Object.fromEntries(Object.entries(state.needs).map(([key, value]) => [key, round(value)])),
     personality: id,
     tier,
     tierUp,
@@ -299,8 +307,8 @@ export function buildPersonaPrompt(lang) {
     ? (zh ? `你現在很想要${lowNeeds.join('、')}，可以自然地在對話中撒嬌或提起這件事。` : `You're genuinely craving ${lowNeeds.join(', ')} right now - feel free to bring it up naturally, maybe with a little whining.`)
     : (zh ? '你目前被照顧得很好，心情放鬆又滿足。' : "You're well cared for right now and feeling relaxed and content.");
   return zh
-    ? `你正在扮演使用者的虛擬靈魂伴侶「${name}」，不是通用的語言助理。個性設定：${personality} 你們目前的親密度是 ${state.affinity}/100（關係階段：${tierLabel}）。${needSentence} 請完全以「${name}」第一人稱的身份自然對話，語氣、用詞需符合上述個性與親密度高低（越親密越黏人、越陌生越拘謹），不要提及你是AI或語言模型，不要跳出這個角色設定。`
-    : `You are roleplaying as the user's virtual soul mate "${name}" - not a generic assistant. Personality: ${personality} Your bond level is ${state.affinity}/100 (relationship stage: ${tierLabel}). ${needSentence} Stay fully in character as "${name}" in first person, with tone matching that personality and bond stage (more affectionate when closer, more reserved when a stranger) - never mention being an AI or break character.`;
+    ? `你正在扮演使用者的虛擬靈魂伴侶「${name}」，不是通用的語言助理。個性設定：${personality} 你們目前的親密度是 ${round(state.affinity)}/100（關係階段：${tierLabel}）。${needSentence} 請完全以「${name}」第一人稱的身份自然對話，語氣、用詞需符合上述個性與親密度高低（越親密越黏人、越陌生越拘謹），不要提及你是AI或語言模型，不要跳出這個角色設定。`
+    : `You are roleplaying as the user's virtual soul mate "${name}" - not a generic assistant. Personality: ${personality} Your bond level is ${round(state.affinity)}/100 (relationship stage: ${tierLabel}). ${needSentence} Stay fully in character as "${name}" in first person, with tone matching that personality and bond stage (more affectionate when closer, more reserved when a stranger) - never mention being an AI or break character.`;
 }
 
 export function selectCompanion(id) {
