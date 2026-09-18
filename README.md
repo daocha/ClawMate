@@ -7,11 +7,11 @@ A web-based digital pet you keep as a browser tab or install as a PWA. Pet it, f
 swipe and hug it — and chat with it through your own [OpenClaw](https://github.com/openclaw)
 agent, with streaming replies and optional push notifications.
 
-<p>
-  <img width="245" alt="Screenshot_20260918_120724_Chrome" src="https://github.com/user-attachments/assets/37d3ca9c-f1d3-44f4-83cf-9700b5ca55ae" />
-  <img width="245" alt="Screenshot_20260918_120758_Chrome" src="https://github.com/user-attachments/assets/519ff899-fcb9-4727-bbab-f1433eaaa373" />
-  <img width="245" alt="Screenshot_20260918_195056_Chrome" src="https://github.com/user-attachments/assets/50250fb0-a9e5-4a79-9583-1b7dbb2e4976" />
-  <img width="245" alt="Screenshot_20260918_120734_Chrome" src="https://github.com/user-attachments/assets/1ea8a7bc-05d6-49ea-80fd-433f59f88784" />
+<p align="center">
+  <img width="205" alt="Screenshot_20260918_120724_Chrome" src="https://github.com/user-attachments/assets/37d3ca9c-f1d3-44f4-83cf-9700b5ca55ae" />
+  <img width="205" alt="Screenshot_20260918_120758_Chrome" src="https://github.com/user-attachments/assets/519ff899-fcb9-4727-bbab-f1433eaaa373" />
+  <img width="205" alt="Screenshot_20260918_195056_Chrome" src="https://github.com/user-attachments/assets/50250fb0-a9e5-4a79-9583-1b7dbb2e4976" />
+  <img width="205" alt="Screenshot_20260918_120734_Chrome" src="https://github.com/user-attachments/assets/1ea8a7bc-05d6-49ea-80fd-433f59f88784" />
 </p>
 
 ## Features
