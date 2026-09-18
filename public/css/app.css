@@ -401,6 +401,7 @@ html[data-theme="dark"] .ico-moon { display: block; }
 .action-grid { display: flex; flex-wrap: wrap; gap: 6px; }
 .action-btn { border: 1px solid var(--border); background: var(--surface-solid); border-radius: 999px; padding: 6px 10px; cursor: pointer; font-size: 12px; }
 .action-btn:active { transform: scale(.94); background: var(--tap); }
+.action-btn:disabled { opacity: .45; cursor: not-allowed; }
 .companion-panel small { display: block; margin-top: 6px; color: var(--text-dim); font-size: 10px; text-align: center; }
 
 .quickbar { display: flex; gap: 10px; align-items: center; justify-content: center; width: 100%; padding-bottom: 4px; }

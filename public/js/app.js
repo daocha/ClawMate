@@ -5,11 +5,12 @@ import { renderPixel } from './render-pixel.js?v=28';
 import { renderCartoon, hasCartoonArt } from './render-cartoon.js?v=1';
 import { Pet } from './pet.js?v=28';
 import { attachInteractions } from './interactions.js?v=26';
-import { companionApi, needLabel, actionLabel, FEED_ACTION } from './companions.js';
+import { companionApi, needLabel, actionLabel, FEED_ACTION, MINIGAME_TUNING } from './companions.js';
 import { PetSocket, ChatView } from './chat.js';
 import { initSettings, startNewSession } from './settings.js';
 import { playCatchGame } from './minigame.js';
 import { recordEvent, listAchievements } from './achievements.js';
+import { pickReactionLine } from './dialogue.js';
 import { setLang, getLang, t, localized, applyTranslations } from './i18n.js';
 import { getDeviceId } from './device.js';
 import { appUrl } from './urls.js';
@@ -130,17 +131,26 @@ moreMenu.addEventListener('click', (e) => {
 const pet = new Pet(stage, {
   reducedMotion: prefs.get('reducedMotion', false),
   onReact: (key) => {
-    showBubble(t(key));
     const action = { reactPet: 'pet', reactHug: 'hug', reactFeed: 'feed' }[key];
-    if (action && companions[currentId]?.actions.some((item) => item.id === action)) {
-      companionApi.act(currentId, action).then((next) => {
-        companions[currentId] = next;
-        renderCompanion();
-        announceUnlocks(recordEvent('interaction'));
-        syncTierStat();
-        handleTierUp(next.tierUp);
-      }).catch(() => {});
+    // Characters without companion/bond data (the cosmetic gallery entries)
+    // fall back to the old single canned line - there's no state to gate on.
+    if (!action || !companions[currentId]?.actions.some((item) => item.id === action)) {
+      showBubble(t(key));
+      return;
     }
+    companionApi.act(currentId, action).then((next) => {
+      companions[currentId] = next;
+      renderCompanion();
+      // On cooldown means this tap changed nothing server-side - stay silent
+      // rather than nag on every rapid tap; the pet's own tap animation is
+      // still the tactile feedback either way.
+      if (next.cooldown) return;
+      showBubble(pickReactionLine(currentId, getLang()));
+      announceUnlocks(recordEvent('interaction'));
+      announceUnlocks(recordEvent('actionUsed', { id: currentId, actionId: action }));
+      syncTierStat();
+      handleTierUp(next.tierUp);
+    }).catch(() => {});
   }
 });
 pet.setReducedMotion(prefs.get('reducedMotion', false));
@@ -156,6 +166,10 @@ function refreshPetLabels() {
   $('petName').textContent = prefs.get('petName', '') || localized(spec.name);
   $('petTag').textContent = localized(spec.tagline);
 }
+
+// Timers that re-enable a cooldown-disabled action button exactly when its
+// cooldown ends; cleared and rebuilt on every render (see renderCompanion).
+let cooldownTimers = [];
 
 function renderCompanion() {
   const data = companions[currentId];
@@ -178,10 +192,20 @@ function renderCompanion() {
   });
   const actions = $('actionGrid');
   actions.innerHTML = '';
+  // Rebuilt on every render (including right after an action call), so any
+  // pending re-enable timers from the previous set of buttons are stale.
+  cooldownTimers.forEach(clearTimeout);
+  cooldownTimers = [];
   data.actions.forEach((action) => {
     const label = actionLabel(currentId, action.id, getLang());
     const button = document.createElement('button');
     button.className = 'action-btn'; button.type = 'button'; button.textContent = label;
+    const readyInMs = action.readyInMs || 0;
+    if (readyInMs > 0) {
+      button.disabled = true;
+      button.title = t('actionCooldownHint').replace('{min}', String(Math.max(1, Math.ceil(readyInMs / 60000))));
+      cooldownTimers.push(setTimeout(() => { button.disabled = false; button.title = ''; }, readyInMs));
+    }
     button.addEventListener('click', async () => {
       button.disabled = true;
       try {
@@ -193,18 +217,24 @@ function renderCompanion() {
           bonus = await playCatchGame(stage, {
             emoji: FEED_EMOJI[currentId] || '🍎',
             reducedMotion: prefs.get('reducedMotion', false),
-            lang: getLang()
+            lang: getLang(),
+            ...MINIGAME_TUNING[currentId]
           });
           if (bonus >= 3) announceUnlocks(recordEvent('perfectCatch'));
         }
         const next = await companionApi.act(currentId, action.id, bonus);
         companions[currentId] = next;
         renderCompanion();
-        pet.react(action.id === 'feed' ? 'feed' : action.id === 'hug' ? 'hug' : 'pet');
-        showBubble(bonus ? `${label} ♥ +${bonus}` : `${label} ♥`);
-        announceUnlocks(recordEvent('interaction'));
-        syncTierStat();
-        handleTierUp(next.tierUp);
+        if (next.cooldown) {
+          showBubble(t('actionCooldown'));
+        } else {
+          pet.react(action.id === 'feed' ? 'feed' : action.id === 'hug' ? 'hug' : 'pet');
+          showBubble(bonus ? `${pickReactionLine(currentId, getLang())} ♥ +${bonus}` : pickReactionLine(currentId, getLang()));
+          announceUnlocks(recordEvent('interaction'));
+          announceUnlocks(recordEvent('actionUsed', { id: currentId, actionId: action.id }));
+          syncTierStat();
+          handleTierUp(next.tierUp);
+        }
       } catch { showBubble(t('errSend')); }
       finally { button.disabled = false; }
     });
@@ -239,7 +269,7 @@ function showBubble(text) {
 // (action, gesture, chat, switch) advanced it.
 function syncTierStat() {
   const tier = companions[currentId]?.tier;
-  if (tier) announceUnlocks(recordEvent('tier', tier.index));
+  if (tier) announceUnlocks(recordEvent('tier', { id: currentId, index: tier.index }));
 }
 
 function announceUnlocks(newlyUnlocked) {

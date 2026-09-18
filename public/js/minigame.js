@@ -6,7 +6,7 @@ const COUNT = 3;
 const FALL_MS = 1500;
 const SPAWN_GAP_MS = 420;
 
-export function playCatchGame(stage, { emoji = '🍎', reducedMotion = false, lang = 'zh-TW' } = {}) {
+export function playCatchGame(stage, { emoji = '🍎', reducedMotion = false, lang = 'zh-TW', fallMs = FALL_MS, spawnGapMs = SPAWN_GAP_MS } = {}) {
   // Reduced-motion users still get the full bonus - the mini-game is a bonus
   // layer, not a requirement to progress.
   if (reducedMotion) return Promise.resolve(COUNT);
@@ -46,7 +46,7 @@ export function playCatchGame(stage, { emoji = '🍎', reducedMotion = false, la
       el.className = 'minigame-item';
       el.textContent = emoji;
       el.style.left = `${12 + Math.random() * 70}%`;
-      el.style.animationDuration = `${FALL_MS}ms`;
+      el.style.animationDuration = `${fallMs}ms`;
       let caught = false;
       const catchIt = (e) => {
         e.preventDefault();
@@ -65,9 +65,9 @@ export function playCatchGame(stage, { emoji = '🍎', reducedMotion = false, la
       overlay.appendChild(el);
     }
 
-    for (let i = 0; i < COUNT; i++) timers.push(setTimeout(spawnOne, i * SPAWN_GAP_MS));
+    for (let i = 0; i < COUNT; i++) timers.push(setTimeout(spawnOne, i * spawnGapMs));
     // Safety net in case an animationend event is ever missed (e.g. tab was
     // backgrounded mid-animation).
-    timers.push(setTimeout(finish, COUNT * SPAWN_GAP_MS + FALL_MS + 800));
+    timers.push(setTimeout(finish, COUNT * spawnGapMs + fallMs + 800));
   });
 }

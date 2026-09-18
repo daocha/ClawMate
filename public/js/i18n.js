@@ -63,7 +63,8 @@ const DICT = {
     tierUpTitle: '親密度提升！', tierUpBody: '你們的關係進入了「{tier}」階段！', tierUpOk: '太棒了！',
     tierStage: '關係階段：{tier}',
     achievements: '成就', achievementsHint: '透過互動、聊天與小遊戲解鎖成就吧！', achievementUnlocked: '解鎖成就：{title}',
-    lockedAchievement: '尚未解鎖'
+    lockedAchievement: '尚未解鎖',
+    actionCooldown: '牠現在還在回味剛才，晚點再來吧～', actionCooldownHint: '還需要 {min} 分鐘才能再做這個互動'
   },
   en: {
     appName: 'ClawMate',
@@ -127,7 +128,8 @@ const DICT = {
     tierUpTitle: 'Your bond just leveled up!', tierUpBody: 'Your relationship reached the "{tier}" stage!', tierUpOk: 'Yay!',
     tierStage: 'Bond stage: {tier}',
     achievements: 'Achievements', achievementsHint: 'Unlock badges by interacting, chatting and playing mini-games!', achievementUnlocked: 'Achievement unlocked: {title}',
-    lockedAchievement: 'Not yet unlocked'
+    lockedAchievement: 'Not yet unlocked',
+    actionCooldown: "Still savoring that - try again in a bit~", actionCooldownHint: 'Ready again in {min} min'
   }
 };
 

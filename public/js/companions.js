@@ -11,22 +11,22 @@ const ACTION_LABELS = {
   momo: {
     share: ['分享今天的小事', 'Share the little things'], walk: ['一起散步拍照', 'Take a photo walk'],
     hug: ['溫柔抱抱', 'A gentle hug'], treat: ['準備小點心', 'Prepare a little snack'],
-    surprise: ['準備小驚喜', 'Prepare a surprise']
+    surprise: ['準備小驚喜', 'Prepare a surprise'], soulmate: ['深夜的告白', 'A heartfelt confession']
   },
   aria: {
     deepTalk: ['深度聊聊', 'Have a deep talk'], read: ['安靜共讀', 'Read quietly together'],
     tea: ['泡杯茶陪伴', 'Share a cup of tea'], cook: ['準備一頓晚餐', 'Prepare dinner'],
-    nightTalk: ['深夜傾談', 'A late-night heart-to-heart']
+    nightTalk: ['深夜傾談', 'A late-night heart-to-heart'], confession: ['真心告白', 'An honest confession']
   },
   mochi: {
     feed: ['餵食', 'Feed'], water: ['換飲水', 'Refresh water'], litter: ['鏟貓砂', 'Scoop litter'],
     pet: ['摸摸頭', 'Pet'], hug: ['抱抱牠', 'Give a hug'], groom: ['梳毛', 'Brush fur'], teaser: ['逗貓棒', 'Play with a teaser'],
-    lap: ['窩在你腿上', 'Curl up on your lap']
+    lap: ['窩在你腿上', 'Curl up on your lap'], purr: ['安心呼嚕', 'Contented purring']
   },
   coco: {
     feed: ['餵食', 'Feed'], water: ['換飲水', 'Refresh water'], walk: ['出去散步', 'Go for a walk'],
     toilet: ['帶去上廁所', 'Bathroom break'], bath: ['洗澡', 'Bath time'], play: ['一起玩', 'Play together'], hug: ['抱抱牠', 'Give a hug'],
-    adventure: ['戶外大冒險', 'A big outdoor adventure']
+    adventure: ['戶外大冒險', 'A big outdoor adventure'], loyalty: ['永遠的陪伴', 'Forever by your side']
   }
 };
 
@@ -34,12 +34,25 @@ const ACTION_LABELS = {
 // boost with a skill bonus before the actual API call.
 export const FEED_ACTION = { momo: 'treat', aria: 'cook', mochi: 'feed', coco: 'feed' };
 
+// Per-character pacing for the catch mini-game (see minigame.js) - faster and
+// tighter for the high-energy critters, slower and more deliberate for Aria.
+export const MINIGAME_TUNING = {
+  momo: { fallMs: 1500, spawnGapMs: 420 },
+  aria: { fallMs: 1900, spawnGapMs: 520 },
+  mochi: { fallMs: 1200, spawnGapMs: 340 },
+  coco: { fallMs: 1050, spawnGapMs: 300 }
+};
+
 export function needLabel(id, lang) {
   return NEED_LABELS[id]?.[lang === 'zh-TW' ? 0 : 1] || id;
 }
 
 export function actionLabel(characterId, actionId, lang) {
   return ACTION_LABELS[characterId]?.[actionId]?.[lang === 'zh-TW' ? 0 : 1] || actionId;
+}
+
+export function actionIds(characterId) {
+  return Object.keys(ACTION_LABELS[characterId] || {});
 }
 
 async function request(path, options) {
