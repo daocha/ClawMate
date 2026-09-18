@@ -185,9 +185,9 @@ const needAlertTimer = setInterval(async () => {
   try {
     const cfg = getConfig();
     if (!cfg.needAlerts || isQuietNow()) return;
-    const { pending } = pendingNeedAlerts();
+    const { id, pending } = pendingNeedAlerts();
     if (!pending.length) return;
-    const { title, body } = buildAlertNotification(pending, cfg.lang);
+    const { title, body } = buildAlertNotification(id, pending, cfg.lang);
     const sent = await push.notify({ title, body, tag: 'need-alert' });
     if (sent) markNeedAlertsSent(pending);
   } catch { /* best effort - retried on the next tick */ }
