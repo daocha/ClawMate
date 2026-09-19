@@ -1,0 +1,17 @@
+{
+  "generator": "built-in image_gen",
+  "version": 3,
+  "note": "Transparent HD pose set for the main-stage tap cycle. The original Momo and Aria stage portraits remain frame zero and are not modified.",
+  "assets": [
+    { "character": "momo", "action": "peace", "file": "momo/peace-v3.png", "reference": "../momo-knee-v4.png", "dimensions": [1024, 1110], "background": "transparent" },
+    { "character": "momo", "action": "stretch", "file": "momo/stretch-v3.png", "reference": "../momo-knee-v4.png", "dimensions": [1024, 1110], "background": "transparent" },
+    { "character": "momo", "action": "bow", "file": "momo/bow-v3.png", "reference": "../momo-knee-v4.png", "dimensions": [1024, 1110], "background": "transparent" },
+    { "character": "momo", "action": "look-back", "file": "momo/look-back-v3.png", "reference": "../momo-knee-v4.png", "dimensions": [1024, 1110], "background": "transparent" },
+    { "character": "momo", "action": "jump", "file": "momo/jump-v3.png", "reference": "../momo-knee-v4.png", "dimensions": [1024, 1110], "background": "transparent" },
+    { "character": "aria", "action": "wave", "file": "aria/wave-v3.png", "reference": "../aria-knee-v3.png", "dimensions": [1024, 1536], "background": "transparent" },
+    { "character": "aria", "action": "stretch", "file": "aria/stretch-v3.png", "reference": "../aria-knee-v3.png", "dimensions": [1024, 1536], "background": "transparent" },
+    { "character": "aria", "action": "bow", "file": "aria/bow-v3.png", "reference": "../aria-knee-v3.png", "dimensions": [1024, 1536], "background": "transparent" },
+    { "character": "aria", "action": "profile-turn", "file": "aria/profile-turn-v3.png", "reference": "../aria-knee-v3.png", "dimensions": [1024, 1536], "background": "transparent" },
+    { "character": "aria", "action": "look-back", "file": "aria/look-back-v3.png", "reference": "../aria-knee-v3.png", "dimensions": [1024, 1536], "background": "transparent" }
+  ]
+}

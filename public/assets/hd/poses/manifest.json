@@ -1,0 +1,146 @@
+{
+  "generator": "built-in image_gen",
+  "note": "HD pose variants; generated backgrounds are not uniformly clean transparent cutouts. Independent stills, not animation frames. Original assets and main app are unchanged.",
+  "assets": [
+    {
+      "character": "momo",
+      "action": "wave",
+      "file": "momo/wave-v1.png",
+      "reference": "../momo-young-v2.png",
+      "prompt": "Use case: identity-preserve. Asset type: standalone HD character pose for ClawMate. Input image 1 is the exact character identity, clothing, proportions and photographic style reference. Create ONE separate image, not a sheet or collage. Character: momo. Action: Front three-quarter view, warmly waving one open hand at shoulder level, relaxed smile. Preserve the reference face, hairstyle, outfit, accessories, colors and identity precisely. Photorealistic HD, fine skin/fabric/fur texture, soft even studio lighting. Entire body including hair, hands, feet and tail when present inside frame, comfortable clear margins, centered portrait composition. Genuinely transparent background with alpha, no dark halo, no scenery, no ground plane, no text, no watermark. Natural anatomy, no extra limbs."
+    },
+    {
+      "character": "momo",
+      "action": "stretch",
+      "file": "momo/stretch-v1.png",
+      "reference": "../momo-young-v2.png",
+      "prompt": "Use case: identity-preserve. Asset type: single HD full-body character action image for ClawMate. Input image 1 is REFERENCE ONLY for exact face, hair/fur, clothing, accessories, proportions and photorealistic rendering. Generate a distinctly NEW pose described below; do not copy the source pose or its backdrop. Preserve character identity and outfit precisely. One character and one pose per file; no collage. HD photorealistic detailed skin/fabric/fur, soft studio lighting. Entire subject including feet, hands, ears, tail within frame with generous margin. Genuinely transparent alpha background, remove the source black/brown glow entirely. No scenery, no halo, no floor, no text or watermark. Natural anatomy.\nCharacter: momo. Action and viewpoint: Front view, gently stretching both arms overhead, eyes softly closed, relaxed smile. Clothing stays fully in place."
+    },
+    {
+      "character": "momo",
+      "action": "bow",
+      "file": "momo/bow-v1.png",
+      "reference": "../momo-young-v2.png",
+      "prompt": "Use case: identity-preserve. Asset type: single HD full-body character action image for ClawMate. Input image 1 is REFERENCE ONLY for exact face, hair/fur, clothing, accessories, proportions and photorealistic rendering. Generate a distinctly NEW pose described below; do not copy the source pose or its backdrop. Preserve character identity and outfit precisely. One character and one pose per file; no collage. HD photorealistic detailed skin/fabric/fur, soft studio lighting. Entire subject including feet, hands, ears, tail within frame with generous margin. Genuinely transparent alpha background, remove the source black/brown glow entirely. No scenery, no halo, no floor, no text or watermark. Natural anatomy.\nCharacter: momo. Action and viewpoint: Three-quarter side view, a small friendly bow from the waist, hands together in front, head tilted toward viewer."
+    },
+    {
+      "character": "momo",
+      "action": "look-back",
+      "file": "momo/look-back-v1.png",
+      "reference": "../momo-young-v2.png",
+      "prompt": "Use case: identity-preserve. Asset type: single HD full-body character action image for ClawMate. Input image 1 is REFERENCE ONLY for exact face, hair/fur, clothing, accessories, proportions and photorealistic rendering. Generate a distinctly NEW pose described below; do not copy the source pose or its backdrop. Preserve character identity and outfit precisely. One character and one pose per file; no collage. HD photorealistic detailed skin/fabric/fur, soft studio lighting. Entire subject including feet, hands, ears, tail within frame with generous margin. Genuinely transparent alpha background, remove the source black/brown glow entirely. No scenery, no halo, no floor, no text or watermark. Natural anatomy.\nCharacter: momo. Action and viewpoint: Rear three-quarter view, turning her head over her shoulder to look back at viewer, hair naturally following turn."
+    },
+    {
+      "character": "momo",
+      "action": "jump",
+      "file": "momo/jump-v1.png",
+      "reference": "../momo-young-v2.png",
+      "prompt": "Use case: identity-preserve. Asset type: single HD full-body character action image for ClawMate. Input image 1 is REFERENCE ONLY for exact face, hair/fur, clothing, accessories, proportions and photorealistic rendering. Generate a distinctly NEW pose described below; do not copy the source pose or its backdrop. Preserve character identity and outfit precisely. One character and one pose per file; no collage. HD photorealistic detailed skin/fabric/fur, soft studio lighting. Entire subject including feet, hands, ears, tail within frame with generous margin. Genuinely transparent alpha background, remove the source black/brown glow entirely. No scenery, no halo, no floor, no text or watermark. Natural anatomy.\nCharacter: momo. Action and viewpoint: Front three-quarter view, cheerful small jump with both shoes off the ground, knees gently bent, arms out for balance. Skirt stays modestly in place."
+    },
+    {
+      "character": "aria",
+      "action": "wave",
+      "file": "aria/wave-v1.png",
+      "reference": "../aria-s-curve-full-v5.png",
+      "prompt": "Use case: identity-preserve. Asset type: single HD full-body character action image for ClawMate. Input image 1 is REFERENCE ONLY for exact face, hair/fur, clothing, accessories, proportions and photorealistic rendering. Generate a distinctly NEW pose described below; do not copy the source pose or its backdrop. Preserve character identity and outfit precisely. One character and one pose per file; no collage. HD photorealistic detailed skin/fabric/fur, soft studio lighting. Entire subject including feet, hands, ears, tail within frame with generous margin. Genuinely transparent alpha background, remove the source black/brown glow entirely. No scenery, no halo, no floor, no text or watermark. Natural anatomy.\nCharacter: aria. Action and viewpoint: Front three-quarter view, graceful greeting with one open hand raised beside shoulder, gentle smile; other hand holds her original book."
+    },
+    {
+      "character": "aria",
+      "action": "stretch",
+      "file": "aria/stretch-v1.png",
+      "reference": "../aria-s-curve-full-v5.png",
+      "prompt": "Use case: identity-preserve. Asset type: single HD full-body character action image for ClawMate. Input image 1 is REFERENCE ONLY for exact face, hair/fur, clothing, accessories, proportions and photorealistic rendering. Generate a distinctly NEW pose described below; do not copy the source pose or its backdrop. Preserve character identity and outfit precisely. One character and one pose per file; no collage. HD photorealistic detailed skin/fabric/fur, soft studio lighting. Entire subject including feet, hands, ears, tail within frame with generous margin. Genuinely transparent alpha background, remove the source black/brown glow entirely. No scenery, no halo, no floor, no text or watermark. Natural anatomy.\nCharacter: aria. Action and viewpoint: Side three-quarter view, gentle standing stretch with both arms reaching upward, eyes softly closed; no book for this action. Blouse and skirt stay in place."
+    },
+    {
+      "character": "aria",
+      "action": "bow",
+      "file": "aria/bow-v1.png",
+      "reference": "../aria-s-curve-full-v5.png",
+      "prompt": "Use case: identity-preserve. Asset type: single HD full-body character action image for ClawMate. Input image 1 is REFERENCE ONLY for exact face, hair/fur, clothing, accessories, proportions and photorealistic rendering. Generate a distinctly NEW pose described below; do not copy the source pose or its backdrop. Preserve character identity and outfit precisely. One character and one pose per file; no collage. HD photorealistic detailed skin/fabric/fur, soft studio lighting. Entire subject including feet, hands, ears, tail within frame with generous margin. Genuinely transparent alpha background, remove the source black/brown glow entirely. No scenery, no halo, no floor, no text or watermark. Natural anatomy.\nCharacter: aria. Action and viewpoint: Front three-quarter view, small polite bow from waist, holding original book with both hands in front of waist, warm smile."
+    },
+    {
+      "character": "aria",
+      "action": "profile-turn",
+      "file": "aria/profile-turn-v1.png",
+      "reference": "../aria-s-curve-full-v5.png",
+      "prompt": "Use case: identity-preserve. Asset type: single HD full-body character action image for ClawMate. Input image 1 is REFERENCE ONLY for exact face, hair/fur, clothing, accessories, proportions and photorealistic rendering. Generate a distinctly NEW pose described below; do not copy the source pose or its backdrop. Preserve character identity and outfit precisely. One character and one pose per file; no collage. HD photorealistic detailed skin/fabric/fur, soft studio lighting. Entire subject including feet, hands, ears, tail within frame with generous margin. Genuinely transparent alpha background, remove the source black/brown glow entirely. No scenery, no halo, no floor, no text or watermark. Natural anatomy.\nCharacter: aria. Action and viewpoint: Full side profile body view, naturally turning head slightly toward viewer, holding original book at her side."
+    },
+    {
+      "character": "aria",
+      "action": "look-back",
+      "file": "aria/look-back-v1.png",
+      "reference": "../aria-s-curve-full-v5.png",
+      "prompt": "Use case: identity-preserve. Asset type: single HD full-body character action image for ClawMate. Input image 1 is REFERENCE ONLY for exact face, hair/fur, clothing, accessories, proportions and photorealistic rendering. Generate a distinctly NEW pose described below; do not copy the source pose or its backdrop. Preserve character identity and outfit precisely. One character and one pose per file; no collage. HD photorealistic detailed skin/fabric/fur, soft studio lighting. Entire subject including feet, hands, ears, tail within frame with generous margin. Genuinely transparent alpha background, remove the source black/brown glow entirely. No scenery, no halo, no floor, no text or watermark. Natural anatomy.\nCharacter: aria. Action and viewpoint: Rear three-quarter full body view, looking back over shoulder with gentle smile, original book held beside hip."
+    },
+    {
+      "character": "mochi",
+      "action": "tail-swish",
+      "file": "mochi/tail-swish-v1.png",
+      "reference": "../mochi-real-longhair-v5.png",
+      "prompt": "Use case: identity-preserve. Asset type: single HD full-body character action image for ClawMate. Input image 1 is REFERENCE ONLY for exact face, hair/fur, clothing, accessories, proportions and photorealistic rendering. Generate a distinctly NEW pose described below; do not copy the source pose or its backdrop. Preserve character identity and outfit precisely. One character and one pose per file; no collage. HD photorealistic detailed skin/fabric/fur, soft studio lighting. Entire subject including feet, hands, ears, tail within frame with generous margin. Genuinely transparent alpha background, remove the source black/brown glow entirely. No scenery, no halo, no floor, no text or watermark. Natural anatomy.\nCharacter: mochi. Action and viewpoint: Rear three-quarter view, head looking back toward viewer, fluffy tail swept to one side in a playful tail swish pose, all paws grounded."
+    },
+    {
+      "character": "mochi",
+      "action": "run",
+      "file": "mochi/run-v1.png",
+      "reference": "../mochi-real-longhair-v5.png",
+      "prompt": "Use case: identity-preserve. Asset type: single HD full-body character action image for ClawMate. Input image 1 is REFERENCE ONLY for exact face, hair/fur, clothing, accessories, proportions and photorealistic rendering. Generate a distinctly NEW pose described below; do not copy the source pose or its backdrop. Preserve character identity and outfit precisely. One character and one pose per file; no collage. HD photorealistic detailed skin/fabric/fur, soft studio lighting. Entire subject including feet, hands, ears, tail within frame with generous margin. Genuinely transparent alpha background, remove the source black/brown glow entirely. No scenery, no halo, no floor, no text or watermark. Natural anatomy.\nCharacter: mochi. Action and viewpoint: Full side view, running playfully leftward, natural feline running gait with forepaws reaching forward and back paws pushing off."
+    },
+    {
+      "character": "mochi",
+      "action": "jump",
+      "file": "mochi/jump-v1.png",
+      "reference": "../mochi-real-longhair-v5.png",
+      "prompt": "Use case: identity-preserve. Asset type: single HD full-body character action image for ClawMate. Input image 1 is REFERENCE ONLY for exact face, hair/fur, clothing, accessories, proportions and photorealistic rendering. Generate a distinctly NEW pose described below; do not copy the source pose or its backdrop. Preserve character identity and outfit precisely. One character and one pose per file; no collage. HD photorealistic detailed skin/fabric/fur, soft studio lighting. Entire subject including feet, hands, ears, tail within frame with generous margin. Genuinely transparent alpha background, remove the source black/brown glow entirely. No scenery, no halo, no floor, no text or watermark. Natural anatomy.\nCharacter: mochi. Action and viewpoint: Front three-quarter view, playful small airborne leap, front paws raised, back paws tucked, entire fluffy tail visible."
+    },
+    {
+      "character": "mochi",
+      "action": "scratch",
+      "file": "mochi/scratch-v1.png",
+      "reference": "../mochi-real-longhair-v5.png",
+      "prompt": "Use case: identity-preserve. Asset type: single HD full-body character action image for ClawMate. Input image 1 is REFERENCE ONLY for exact face, hair/fur, clothing, accessories, proportions and photorealistic rendering. Generate a distinctly NEW pose described below; do not copy the source pose or its backdrop. Preserve character identity and outfit precisely. One character and one pose per file; no collage. HD photorealistic detailed skin/fabric/fur, soft studio lighting. Entire subject including feet, hands, ears, tail within frame with generous margin. Genuinely transparent alpha background, remove the source black/brown glow entirely. No scenery, no halo, no floor, no text or watermark. Natural anatomy.\nCharacter: mochi. Action and viewpoint: Three-quarter view, sitting and scratching behind one ear with a raised hind paw, natural cat anatomy and relaxed squint."
+    },
+    {
+      "character": "mochi",
+      "action": "groom",
+      "file": "mochi/groom-v1.png",
+      "reference": "../mochi-real-longhair-v5.png",
+      "prompt": "Use case: identity-preserve. Asset type: single HD full-body character action image for ClawMate. Input image 1 is REFERENCE ONLY for exact face, hair/fur, clothing, accessories, proportions and photorealistic rendering. Generate a distinctly NEW pose described below; do not copy the source pose or its backdrop. Preserve character identity and outfit precisely. One character and one pose per file; no collage. HD photorealistic detailed skin/fabric/fur, soft studio lighting. Entire subject including feet, hands, ears, tail within frame with generous margin. Genuinely transparent alpha background, remove the source black/brown glow entirely. No scenery, no halo, no floor, no text or watermark. Natural anatomy.\nCharacter: mochi. Action and viewpoint: Side three-quarter view, sitting with one front paw raised toward mouth, small tongue visibly licking the paw, relaxed grooming pose."
+    },
+    {
+      "character": "coco",
+      "action": "tail-wag",
+      "file": "coco/tail-wag-v1.png",
+      "reference": "../coco.png",
+      "prompt": "Use case: identity-preserve. Asset type: single HD full-body character action image for ClawMate. Input image 1 is REFERENCE ONLY for exact face, hair/fur, clothing, accessories, proportions and photorealistic rendering. Generate a distinctly NEW pose described below; do not copy the source pose or its backdrop. Preserve character identity and outfit precisely. One character and one pose per file; no collage. HD photorealistic detailed skin/fabric/fur, soft studio lighting. Entire subject including feet, hands, ears, tail within frame with generous margin. Genuinely transparent alpha background, remove the source black/brown glow entirely. No scenery, no halo, no floor, no text or watermark. Natural anatomy.\nCharacter: coco. Action and viewpoint: Rear three-quarter view, looking back at viewer with happy open mouth, curled tail leaning to the side in mid-wag pose."
+    },
+    {
+      "character": "coco",
+      "action": "chew-bone",
+      "file": "coco/chew-bone-v1.png",
+      "reference": "../coco.png",
+      "prompt": "Use case: identity-preserve. Asset type: single HD full-body character action image for ClawMate. Input image 1 is REFERENCE ONLY for exact face, hair/fur, clothing, accessories, proportions and photorealistic rendering. Generate a distinctly NEW pose described below; do not copy the source pose or its backdrop. Preserve character identity and outfit precisely. One character and one pose per file; no collage. HD photorealistic detailed skin/fabric/fur, soft studio lighting. Entire subject including feet, hands, ears, tail within frame with generous margin. Genuinely transparent alpha background, remove the source black/brown glow entirely. No scenery, no halo, no floor, no text or watermark. Natural anatomy.\nCharacter: coco. Action and viewpoint: Low front three-quarter view, lying on belly holding a simple bone-shaped dog chew between front paws, gently gnawing it."
+    },
+    {
+      "character": "coco",
+      "action": "run-side",
+      "file": "coco/run-side-v1.png",
+      "reference": "../coco.png",
+      "prompt": "Use case: identity-preserve. Asset type: single HD full-body character action image for ClawMate. Input image 1 is REFERENCE ONLY for exact face, hair/fur, clothing, accessories, proportions and photorealistic rendering. Generate a distinctly NEW pose described below; do not copy the source pose or its backdrop. Preserve character identity and outfit precisely. One character and one pose per file; no collage. HD photorealistic detailed skin/fabric/fur, soft studio lighting. Entire subject including feet, hands, ears, tail within frame with generous margin. Genuinely transparent alpha background, remove the source black/brown glow entirely. No scenery, no halo, no floor, no text or watermark. Natural anatomy.\nCharacter: coco. Action and viewpoint: Full side view, running rightward in a natural canine running gait, all four legs anatomically coherent, joyful expression."
+    },
+    {
+      "character": "coco",
+      "action": "run-front",
+      "file": "coco/run-front-v1.png",
+      "reference": "../coco.png",
+      "prompt": "Use case: identity-preserve. Asset type: single HD full-body character action image for ClawMate. Input image 1 is REFERENCE ONLY for exact face, hair/fur, clothing, accessories, proportions and photorealistic rendering. Generate a distinctly NEW pose described below; do not copy the source pose or its backdrop. Preserve character identity and outfit precisely. One character and one pose per file; no collage. HD photorealistic detailed skin/fabric/fur, soft studio lighting. Entire subject including feet, hands, ears, tail within frame with generous margin. Genuinely transparent alpha background, remove the source black/brown glow entirely. No scenery, no halo, no floor, no text or watermark. Natural anatomy.\nCharacter: coco. Action and viewpoint: Front three-quarter view, trotting toward viewer with one front paw lifted, happy face and ears alert, full curled tail visible."
+    },
+    {
+      "character": "coco",
+      "action": "play-bow",
+      "file": "coco/play-bow-v1.png",
+      "reference": "../coco.png",
+      "prompt": "Use case: identity-preserve. Asset type: single HD full-body character action image for ClawMate. Input image 1 is REFERENCE ONLY for exact face, hair/fur, clothing, accessories, proportions and photorealistic rendering. Generate a distinctly NEW pose described below; do not copy the source pose or its backdrop. Preserve character identity and outfit precisely. One character and one pose per file; no collage. HD photorealistic detailed skin/fabric/fur, soft studio lighting. Entire subject including feet, hands, ears, tail within frame with generous margin. Genuinely transparent alpha background, remove the source black/brown glow entirely. No scenery, no halo, no floor, no text or watermark. Natural anatomy.\nCharacter: coco. Action and viewpoint: Side three-quarter view, playful dog bow with front paws stretched forward and chest lowered, hindquarters up, happy open mouth, curled tail raised."
+    }
+  ]
+}
