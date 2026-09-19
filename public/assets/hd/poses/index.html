@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ClawMate · HD 動作圖集</title>
+<style>
+*{box-sizing:border-box}body{margin:0;padding:32px 20px;background:#f6f1ed;color:#3b3035;font:16px/1.6 system-ui,sans-serif}main{max-width:1440px;margin:auto}h1{margin:0 0 8px}h2{margin:40px 0 12px}p{color:#75636c}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px}figure{margin:0;overflow:hidden;border-radius:16px;background:#fff;box-shadow:0 4px 16px #40303810}figure a{display:block;background:repeating-conic-gradient(#e9e4e0 0% 25%,#fff 0% 50%) 0/20px 20px}img{display:block;width:100%;height:340px;object-fit:contain}figcaption{padding:12px 16px}small{display:block;color:#887680}.badge{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;background:#efe5eb;color:#765767;font-size:12px}
+</style>
+</head>
+<body><main>
+<h1>HD 動作圖集</h1>
+<p>目前全部 30 張 HD 動作圖：小桃與 Aria 各有 v1、v3，麻糬貓與可可柴保留 v1。點擊可開啟原始 PNG；棋盤格代表透明區域。</p>
+<div id="gallery"></div>
+<p>素材清單：<a href="./manifest.json">manifest.json</a></p>
+</main>
+<script>
+const groups = [
+  ['小桃 Momo', [['wave-v1.png','揮手','v1'],['stretch-v1.png','伸懶腰','v1'],['bow-v1.png','鞠躬','v1'],['look-back-v1.png','背面回頭','v1'],['jump-v1.png','跳躍','v1'],['peace-v3.png','V 手勢','v3'],['stretch-v3.png','伸展','v3'],['bow-v3.png','致意','v3'],['look-back-v3.png','背面回望','v3'],['jump-v3.png','跳躍','v3']]],
+  ['艾莉亞 Aria', [['wave-v1.png','揮手','v1'],['stretch-v1.png','伸展','v1'],['bow-v1.png','致意','v1'],['profile-turn-v1.png','側身轉頭','v1'],['look-back-v1.png','背面回望','v1'],['wave-v3.png','揮手','v3'],['stretch-v3.png','伸展','v3'],['bow-v3.png','致意','v3'],['profile-turn-v3.png','側身轉頭','v3'],['look-back-v3.png','背面回望','v3']]],
+  ['麻糬貓 Mochi', [['tail-swish-v1.png','回頭搖尾','v1'],['run-v1.png','跑動','v1'],['jump-v1.png','跳躍','v1'],['scratch-v1.png','搔耳','v1'],['groom-v1.png','舔毛','v1']]],
+  ['可可柴 Coco', [['tail-wag-v1.png','搖尾','v1'],['chew-bone-v1.png','啃骨頭','v1'],['run-side-v1.png','側面跑動','v1'],['run-front-v1.png','迎面跑動','v1'],['play-bow-v1.png','玩耍鞠躬','v1']]]
+];
+const root = document.querySelector('#gallery');
+for (const [name, images] of groups) {
+  const id = name.includes('小桃') ? 'momo' : name.includes('艾莉亞') ? 'aria' : name.includes('麻糬') ? 'mochi' : 'coco';
+  const section = document.createElement('section');
+  section.innerHTML = `<h2>${name}</h2><div class="grid">${images.map(([file, label, version]) => `<figure><a href="./${id}/${file}"><img src="./${id}/${file}" alt="${name}：${label}" loading="lazy"></a><figcaption>${label}<span class="badge">${version}</span><small>${file}</small></figcaption></figure>`).join('')}</div>`;
+  root.append(section);
+}
+</script>
+</body>
+</html>

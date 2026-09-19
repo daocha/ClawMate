@@ -74,8 +74,21 @@ export function attachInteractions(stage, pet, opts = {}) {
     }
 
     if (s.moved) return;
-    // The pixel model and the cartoon reference art respond to every single
-    // tap immediately. Other art styles retain their existing double-tap gesture.
+    // HD portrait taps advance once per pointerup, including rapid taps.
+    // Keep pose changes separate from feed/hug/programmatic reactions.
+    if (pet.hdPoseCycle) {
+      clearTimeout(pendingTap);
+      lastTapAt = 0;
+      if (pet.hdPoseCycle.contains({ x: s.x, y: s.y }) && pet.hdPoseCycle.contains(at)) {
+        void pet.hdPoseCycle.next();
+        haptics();
+        pet.react('pet', at);
+      }
+      bumpIdle();
+      return;
+    }
+    // Pixel and cartoon art also respond immediately to every single tap.
+    // Other art styles retain their existing double-tap gesture.
     if (pet.pixelAnimator || pet.cartoonImg) {
       clearTimeout(pendingTap);
       lastTapAt = 0;

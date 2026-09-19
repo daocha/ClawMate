@@ -4,6 +4,7 @@ import { renderPixel, hasPixelModel } from './render-pixel.js?v=28';
 import { renderCartoon, hasCartoonArt } from './render-cartoon.js?v=1';
 import { PixelAnimator, WIDTH, HEIGHT } from './pixel-model.js?v=28';
 import { mouthPath, EXPRESSIONS, BROW_POSE } from './face.js';
+import { HD_POSES, HDPoseCycle } from './hd-poses.js?v=6';
 
 const BLINK_MIN = 2400;
 const BLINK_MAX = 6200;
@@ -30,6 +31,8 @@ export class Pet {
   }
 
   mount(spec, mode) {
+    this.hdPoseCycle?.destroy();
+    this.hdPoseCycle = null;
     this.pixelAnimator?.destroy();
     this.pixelAnimator = null;
     clearTimeout(this.holdTimer);
@@ -60,6 +63,9 @@ export class Pet {
     this.svg = host.querySelector('svg, .pet-stage-art, canvas');
     if (modeled) this.pixelAnimator = new PixelAnimator(this.svg, spec, this.reducedMotion);
     this.cartoonImg = cartoonArt ? host.querySelector('img.pet-cartoon-image') : null;
+    if (mode === 'hd' && HD_POSES[spec.id]) {
+      this.hdPoseCycle = new HDPoseCycle(host.querySelector('img.pet-photo--portrait'), spec.id);
+    }
     // Raster HD portraits use a native <img>; the remaining SVG styles keep
     // spare aspect-ratio space below the artwork.
     if (this.svg.tagName.toLowerCase() === 'svg') {
@@ -79,6 +85,7 @@ export class Pet {
   }
 
   destroy() {
+    this.hdPoseCycle?.destroy();
     this.pixelAnimator?.destroy();
     clearTimeout(this.blinkTimer);
     clearTimeout(this.holdTimer);
