@@ -1,3 +1,5 @@
+import { renderStylePoseStage } from './style-poses.js?v=3';
+
 // Code-drawn hand-animated chibis, deliberately separate from the HD cut-outs.
 const VIEWBOX = '0 0 1000 1400';
 const esc = (v = '') => String(v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -48,7 +50,7 @@ export function renderChibi(spec, presentation = 'crop') {
     const images = { momo: 'momo-painted-v4.png', aria: 'aria-painted-v4.png' };
     const image = `./assets/chibi/${images[spec.id] || `${spec.id}-painted-v2.png`}`;
     if (presentation === 'stage') {
-      return `<div class="pet-stage-art pet-chibi-stage" role="img" aria-label="${esc(spec.name.en)}"><div class="pet-root"><img class="pet-stage-image pet-chibi-art" src="${image}" alt="" draggable="false"></div></div>`;
+      return renderStylePoseStage(spec, 'chibi');
     }
     const cropHuman = spec.archetype === 'humanoid' && presentation !== 'full';
     const viewBox = cropHuman ? '0 0 1000 940' : VIEWBOX;

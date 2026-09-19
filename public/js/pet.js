@@ -1,10 +1,11 @@
-import { renderReal } from './render-real.js?v=24';
-import { renderChibi } from './render-chibi.js?v=24';
+import { renderReal } from './render-real.js?v=26';
+import { renderChibi } from './render-chibi.js?v=25';
 import { renderPixel, hasPixelModel } from './render-pixel.js?v=28';
-import { renderCartoon, hasCartoonArt } from './render-cartoon.js?v=1';
+import { renderCartoon, hasCartoonArt } from './render-cartoon.js?v=2';
 import { PixelAnimator, WIDTH, HEIGHT } from './pixel-model.js?v=28';
 import { mouthPath, EXPRESSIONS, BROW_POSE } from './face.js';
-import { HD_POSES, HDPoseCycle } from './hd-poses.js?v=6';
+import { HD_POSES, HDPoseCycle } from './hd-poses.js?v=7';
+import { StylePoseCycle } from './style-poses.js?v=3';
 
 const BLINK_MIN = 2400;
 const BLINK_MAX = 6200;
@@ -21,6 +22,7 @@ export class Pet {
     this.holdTimer = null;
     this.talkTimer = null;
     this.cartoonImg = null;
+    this.stylePoseCycle = null;
     this.cartoonTimer = null;
     this.mood = 70;
     this.energy = 80;
@@ -33,6 +35,8 @@ export class Pet {
   mount(spec, mode) {
     this.hdPoseCycle?.destroy();
     this.hdPoseCycle = null;
+    this.stylePoseCycle?.destroy();
+    this.stylePoseCycle = null;
     this.pixelAnimator?.destroy();
     this.pixelAnimator = null;
     clearTimeout(this.holdTimer);
@@ -48,7 +52,7 @@ export class Pet {
       : mode === 'pixel'
       ? renderPixel(spec)
       : cartoonArt
-        ? renderCartoon(spec)
+        ? renderCartoon(spec, 'stage')
         : mode === 'chibi'
           ? renderChibi(spec, 'stage')
           : renderReal(spec, 'stage');
@@ -63,8 +67,10 @@ export class Pet {
     this.svg = host.querySelector('svg, .pet-stage-art, canvas');
     if (modeled) this.pixelAnimator = new PixelAnimator(this.svg, spec, this.reducedMotion);
     this.cartoonImg = cartoonArt ? host.querySelector('img.pet-cartoon-image') : null;
+    const poseImage = host.querySelector('.pet-style-pose-image');
+    if (poseImage) this.stylePoseCycle = new StylePoseCycle(poseImage, spec.id, mode);
     if (mode === 'hd' && HD_POSES[spec.id]) {
-      this.hdPoseCycle = new HDPoseCycle(host.querySelector('img.pet-photo--portrait'), spec.id);
+      this.hdPoseCycle = new HDPoseCycle(host.querySelector('img.pet-photo'), spec.id);
     }
     // Raster HD portraits use a native <img>; the remaining SVG styles keep
     // spare aspect-ratio space below the artwork.
@@ -86,6 +92,7 @@ export class Pet {
 
   destroy() {
     this.hdPoseCycle?.destroy();
+    this.stylePoseCycle?.destroy();
     this.pixelAnimator?.destroy();
     clearTimeout(this.blinkTimer);
     clearTimeout(this.holdTimer);
