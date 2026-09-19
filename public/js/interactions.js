@@ -87,6 +87,18 @@ export function attachInteractions(stage, pet, opts = {}) {
       bumpIdle();
       return;
     }
+    // Q版與卡通版使用各自的五格姿勢表，和 HD 一樣每次點擊都輪播。
+    if (pet.stylePoseCycle) {
+      clearTimeout(pendingTap);
+      lastTapAt = 0;
+      if (pet.stylePoseCycle.contains({ x: s.x, y: s.y }) && pet.stylePoseCycle.contains(at)) {
+        pet.stylePoseCycle.next();
+        haptics();
+        pet.react('pet', at);
+      }
+      bumpIdle();
+      return;
+    }
     // Pixel and cartoon art also respond immediately to every single tap.
     // Other art styles retain their existing double-tap gesture.
     if (pet.pixelAnimator || pet.cartoonImg) {

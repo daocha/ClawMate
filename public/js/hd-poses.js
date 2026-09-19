@@ -8,6 +8,12 @@ export const HD_POSES = {
   aria: [
     ['wave', 1], ['stretch', 1], ['bow', 1], ['profile-turn', 1], ['look-back', 1],
     ['wave', 3], ['stretch', 3], ['bow', 3], ['profile-turn', 3], ['look-back', 3]
+  ],
+  mochi: [
+    ['tail-swish', 1], ['run', 1], ['jump', 1], ['scratch', 1], ['groom', 1]
+  ],
+  coco: [
+    ['tail-wag', 1], ['chew-bone', 1], ['run-side', 1], ['run-front', 1], ['play-bow', 1]
   ]
 };
 

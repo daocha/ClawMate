@@ -1,10 +1,10 @@
 import { CHARACTERS, getCharacter } from './characters.js';
-import { renderReal } from './render-real.js?v=24';
-import { renderChibi } from './render-chibi.js?v=24';
+import { renderReal } from './render-real.js?v=26';
+import { renderChibi } from './render-chibi.js?v=25';
 import { renderPixel } from './render-pixel.js?v=28';
-import { renderCartoon, hasCartoonArt } from './render-cartoon.js?v=1';
-import { Pet } from './pet.js?v=34';
-import { attachInteractions } from './interactions.js?v=27';
+import { renderCartoon, hasCartoonArt } from './render-cartoon.js?v=2';
+import { Pet } from './pet.js?v=39';
+import { attachInteractions } from './interactions.js?v=28';
 import { companionApi, needLabel, actionLabel, FEED_ACTION, MINIGAME_TUNING } from './companions.js';
 import { PetSocket, ChatView } from './chat.js';
 import { initSettings, startNewSession } from './settings.js';
