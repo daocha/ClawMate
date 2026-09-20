@@ -23,7 +23,8 @@ const DEFAULTS = {
   lang: 'zh-TW',
   dndStart: '00:00',
   dndEnd: '10:00',
-  needAlerts: true
+  needAlerts: true,
+  noteExpiryDays: 7
 };
 
 fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -40,6 +41,7 @@ export function getConfig() {
   }
   cache = { ...DEFAULTS, ...stored };
   if (!PERMISSION_MODES.includes(cache.permission)) cache.permission = 'read-only';
+  if (!Number.isInteger(Number(cache.noteExpiryDays)) || Number(cache.noteExpiryDays) < 1 || Number(cache.noteExpiryDays) > 3650) cache.noteExpiryDays = 7;
   return cache;
 }
 
@@ -67,6 +69,7 @@ export function publicConfig() {
     dndStart: c.dndStart,
     dndEnd: c.dndEnd,
     needAlerts: c.needAlerts !== false,
+    noteExpiryDays: c.noteExpiryDays,
     hasToken: Boolean(c.token),
     configured: Boolean(c.serverUrl)
   };

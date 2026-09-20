@@ -8,6 +8,7 @@ import { sendMessage, testConnection, listAgents, sessionKeyFor } from './opencl
 import * as push from './push.js';
 import { getCompanions, interact, rewardChat, selectCompanion, pendingNeedAlerts, markNeedAlertsSent, buildAlertNotification, isQuietNow, buildPersonaPrompt, getActiveCompanionId } from './companions.js';
 import { isValidDeviceId, touchDevice } from './devices.js';
+import { listNotes, listSchedules, createNote, updateNote, updateReminder, deleteNote, deleteNotes, deleteExpiredNotes, dueReminders, markReminderDelivered } from './notes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT || 8080);
@@ -55,6 +56,29 @@ app.post('/api/companions/select', (req, res) => {
   if (!selection) return res.status(400).json({ ok: false, error: 'Unknown companion' });
   res.json({ ok: true, companions: selection });
 });
+app.get('/api/notes', (req, res) => res.json({ ok: true, notes: listNotes(req.query.q) }));
+app.get('/api/notes/schedules', (_req, res) => res.json({ ok: true, schedules: listSchedules() }));
+app.post('/api/notes', (req, res) => {
+  const note = createNote(req.body?.text);
+  if (!note) return res.status(400).json({ ok: false, error: 'Note text is required' });
+  res.status(201).json({ ok: true, note });
+});
+app.put('/api/notes/:id', (req, res) => {
+  const note = updateNote(req.params.id, req.body);
+  if (!note) return res.status(400).json({ ok: false, error: 'Note was not found or has no text' });
+  res.json({ ok: true, note });
+});
+app.put('/api/notes/:id/reminder', (req, res) => {
+  const note = updateReminder(req.params.id, req.body);
+  if (!note) return res.status(400).json({ ok: false, error: 'Reminder is invalid, missing, or in the past' });
+  res.json({ ok: true, note });
+});
+app.delete('/api/notes/:id', (req, res) => {
+  if (!deleteNote(req.params.id)) return res.status(404).json({ ok: false, error: 'Note was not found' });
+  res.json({ ok: true });
+});
+app.post('/api/notes/delete-expired', (_req, res) => res.json({ ok: true, deleted: deleteExpiredNotes() }));
+app.post('/api/notes/delete-many', (req, res) => res.json({ ok: true, deleted: deleteNotes(req.body?.ids) }));
 app.get('/api/settings', (_req, res) => res.json(publicConfig()));
 
 app.put('/api/settings', (req, res) => {
@@ -66,6 +90,10 @@ app.put('/api/settings', (req, res) => {
   if (patch.lang && !['zh-TW', 'en'].includes(patch.lang)) delete patch.lang;
   if (patch.dndStart && !/^\d{1,2}:\d{2}$/.test(patch.dndStart)) delete patch.dndStart;
   if (patch.dndEnd && !/^\d{1,2}:\d{2}$/.test(patch.dndEnd)) delete patch.dndEnd;
+  if ('noteExpiryDays' in req.body) {
+    const days = Number(req.body.noteExpiryDays);
+    if (Number.isInteger(days) && days >= 1 && days <= 3650) patch.noteExpiryDays = days;
+  }
   if ('needAlerts' in req.body) patch.needAlerts = !!req.body.needAlerts;
   saveConfig(patch);
   res.json(publicConfig());
@@ -89,6 +117,14 @@ app.get('/api/agents', async (_req, res) => {
 app.get('/api/push/key', (_req, res) => res.json({ publicKey: push.publicKey }));
 app.post('/api/push/subscribe', (req, res) => res.json({ ok: push.subscribe(req.body) }));
 app.post('/api/push/unsubscribe', (req, res) => res.json({ ok: push.unsubscribe(req.body?.endpoint) }));
+app.post('/api/push/test', (req, res) => {
+  // Return before delivery so the user can immediately close the PWA. The
+  // resulting notification therefore proves the closed-app path, not merely
+  // a foreground Service Worker notification.
+  const subscription = req.body;
+  setTimeout(() => { push.sendTest(subscription); }, 5000).unref();
+  res.status(202).json({ ok: true, delaySeconds: 5 });
+});
 
 // Tracks which companion a given OpenClaw session was last primed with, so the
 // persona prompt is only (re-)sent right after `sessions.create` (new session)
@@ -134,8 +170,9 @@ wss.on('connection', (socket, req) => {
       return;
     }
 
-    const controller = new AbortController();
-    socket.once('close', () => controller.abort());
+    // A reply requested from a phone can finish after the OS suspends or closes
+    // the PWA. Do not abort that upstream request on disconnect: its completed
+    // text is exactly what Web Push must deliver to the user in that case.
     send({ type: 'start', id });
 
     try {
@@ -151,11 +188,11 @@ wss.on('connection', (socket, req) => {
           onDelta: (delta) => send({ type: 'delta', id, text: delta }),
           onReplace: (whole) => send({ type: 'replace', id, text: whole })
         },
-        controller.signal
+        undefined
       );
       send({ type: 'done', id, text: full });
 
-      if (socket.hidden && full) {
+      if ((socket.hidden || socket.readyState !== socket.OPEN) && full) {
         push.notify({
           title: msg.petName || 'ClawMate',
           body: full.slice(0, 180),
@@ -193,6 +230,25 @@ const needAlertTimer = setInterval(async () => {
   } catch { /* best effort - retried on the next tick */ }
 }, 5 * 60_000);
 
+// Reminder delivery is intentionally a tiny in-process scheduler. Unlike
+// expired notes it has to run server-side so a closed PWA can receive Web Push.
+let deliveringReminders = false;
+const reminderTimer = setInterval(async () => {
+  if (deliveringReminders) return;
+  deliveringReminders = true;
+  try {
+    for (const note of dueReminders()) {
+      const delivered = await push.notify({
+        title: 'ClawMate 提醒', body: note.text.slice(0, 180), tag: `note-${note.id}`,
+        noteId: note.id, url: `./?note=${encodeURIComponent(note.id)}`
+      });
+      if (delivered > 0) markReminderDelivered(note.id);
+      else console.warn(`[ClawMate] reminder ${note.id} was not delivered; it will retry`);
+    }
+  } catch { /* a future minute retries unsent operational errors */ }
+  finally { deliveringReminders = false; }
+}, 60_000);
+
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`[ClawMate] listening on http://0.0.0.0:${PORT}`);
 });
@@ -200,6 +256,7 @@ server.listen(PORT, '0.0.0.0', () => {
 const shutdown = () => {
   clearInterval(heartbeat);
   clearInterval(needAlertTimer);
+  clearInterval(reminderTimer);
   wss.clients.forEach((c) => c.close());
   server.close(() => process.exit(0));
   setTimeout(() => process.exit(0), 3000).unref();
