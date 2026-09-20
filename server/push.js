@@ -52,10 +52,32 @@ export async function notify(payload) {
   const dead = [];
   results.forEach((r, i) => {
     if (r.status === 'rejected' && [404, 410].includes(r.reason?.statusCode)) dead.push(subs[i].endpoint);
+    else if (r.status === 'rejected') {
+      console.warn(`[ClawMate] push delivery failed (${r.reason?.statusCode || r.reason?.code || 'unknown'}): ${r.reason?.message || r.reason}`);
+    }
   });
   if (dead.length) {
     subs = subs.filter((s) => !dead.includes(s.endpoint));
     persist();
   }
   return results.filter((r) => r.status === 'fulfilled').length;
+}
+
+// Sends only to the subscription supplied by the paired device. This is for
+// diagnosing the entire Web Push path without waking every subscribed device.
+export async function sendTest(sub) {
+  if (!sub?.endpoint || !sub?.keys?.p256dh || !sub?.keys?.auth) {
+    return { ok: false, error: 'invalid-subscription' };
+  }
+  try {
+    await webpush.sendNotification(sub, JSON.stringify({
+      title: 'ClawMate', body: '推播測試成功', tag: 'clawmate-push-test'
+    }));
+    return { ok: true };
+  } catch (err) {
+    const status = err?.statusCode || err?.statusCode === 0 ? err.statusCode : null;
+    if ([404, 410].includes(status)) unsubscribe(sub.endpoint);
+    console.warn(`[ClawMate] test push failed (${status || err?.code || 'unknown'}): ${err?.message || err}`);
+    return { ok: false, status, error: err?.message || String(err) };
+  }
 }

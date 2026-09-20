@@ -14,6 +14,7 @@ import { pickReactionLine, pickCooldownLine } from './dialogue.js';
 import { setLang, getLang, t, localized, applyTranslations } from './i18n.js';
 import { getDeviceId } from './device.js';
 import { appUrl } from './urls.js';
+import { NotesView } from './notes.js';
 
 /* ------------------------------------------------------------------ prefs */
 const STORE = 'clawmate:prefs';
@@ -482,6 +483,7 @@ document.querySelectorAll('.tab').forEach((tab) => {
     app.dataset.view = tab.dataset.view;
     document.querySelectorAll('.tab').forEach((x) => x.classList.toggle('is-on', x === tab));
     if (tab.dataset.view === 'chat') setTimeout(() => chat.scroll(), 50);
+    if (tab.dataset.view === 'notes') notes.load();
   });
 });
 
@@ -532,6 +534,44 @@ const chat = new ChatView(
   }
 );
 
+const notes = new NotesView(
+  {
+    list: $('notesList'), empty: $('notesEmpty'), search: $('noteSearch'), addBtn: $('noteAddBtn'), selectBtn: $('notesSelectBtn'),
+    selectionBar: $('notesSelectionBar'), selectionCount: $('notesSelectionCount'), cancelSelectionBtn: $('cancelNotesSelectionBtn'), deleteSelectedBtn: $('deleteSelectedNotesBtn'),
+    expiredList: $('expiredNotesList'), expiredSection: $('expiredNotes'), deleteExpiredBtn: $('deleteExpiredBtn'),
+    schedulesToggle: $('schedulesToggle'), schedulesPanel: $('schedulesPanel'), schedulesList: $('schedulesList'), schedulesEmpty: $('schedulesEmpty'), schedulesCount: $('schedulesCount'),
+    sheet: $('noteSheet'), sheetTitle: $('noteSheetTitle'), input: $('noteInput'), micBtn: $('noteMicBtn'),
+    contentBtn: $('noteContentBtn'), expiryText: $('noteExpiryText'),
+    saveBtn: $('noteSaveBtn'), deleteBtn: $('noteDeleteBtn'), pinBtn: $('notePinBtn'),
+    closeBtns: document.querySelectorAll('[data-note-close]'),
+    deleteModal: $('noteDeleteModal'), deleteModalText: $('noteDeleteModalText'),
+    confirmDeleteBtn: $('confirmNoteDeleteBtn'), cancelDeleteBtns: document.querySelectorAll('[data-note-delete-cancel]'),
+    scheduleSheet: $('scheduleSheet'), scheduleNoteText: $('scheduleNoteText'), scheduleTimeInput: $('scheduleTimeInput'), scheduleRepeatInput: $('scheduleRepeatInput'),
+    saveScheduleBtn: $('saveScheduleBtn'), scheduleCloseBtns: document.querySelectorAll('[data-schedule-close]')
+  },
+  { onToast: (message) => showBubble(message) }
+);
+attachSheetDismissDrag($('noteSheet'), () => notes.close());
+attachSheetDismissDrag($('scheduleSheet'), () => { $('scheduleSheet').hidden = true; });
+
+function showNotificationNote(noteId) {
+  if (!noteId) return;
+  app.dataset.view = 'notes';
+  document.querySelectorAll('.tab').forEach((tab) => tab.classList.toggle('is-on', tab.dataset.view === 'notes'));
+  notes.openFromNotification(noteId).catch(() => {});
+}
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('message', (event) => {
+    if (event.data?.type === 'clawmate-notification-click') showNotificationNote(event.data.noteId);
+  });
+}
+const notificationNoteId = new URL(window.location.href).searchParams.get('note');
+if (notificationNoteId) {
+  history.replaceState(null, '', window.location.pathname + window.location.hash);
+  setTimeout(() => showNotificationNote(notificationNoteId), 0);
+}
+
 document.addEventListener('visibilitychange', () => socket.setVisibility(document.hidden));
 socket.connect();
 
@@ -565,6 +605,10 @@ const swReady = async () => {
   if (swRegistration) return swRegistration;
   swRegistration = await navigator.serviceWorker.register('./sw.js');
   await navigator.serviceWorker.ready;
+  // A service worker cannot read localStorage itself. Give it this paired
+  // device id so it can authenticate a future pushsubscriptionchange event
+  // even if no page is open at that time.
+  swRegistration.active?.postMessage({ type: 'clawmate-device-id', deviceId: getDeviceId() });
   return swRegistration;
 };
 if ('serviceWorker' in navigator) swReady().catch(() => {});
@@ -615,8 +659,9 @@ const settings = initSettings(
     url: $('setUrl'), token: $('setToken'), agent: $('setAgent'), transport: $('setTransport'),
     petName: $('setPetName'), push: $('setPush'), haptics: $('setHaptics'),
     motion: $('setMotion'), needAlerts: $('setNeedAlerts'), dndStart: $('setDndStart'), dndEnd: $('setDndEnd'),
+    noteExpiryDays: $('setNoteExpiryDays'),
     saveBtn: $('saveBtn'), testBtn: $('testBtn'), reloadAgents: $('reloadAgents'),
-    saveResult: $('saveResult'), testResult: $('testResult'), pushResult: $('pushResult')
+    saveResult: $('saveResult'), testResult: $('testResult'), pushResult: $('pushResult'), pushTestBtn: $('pushTestBtn')
   },
   {
     prefs,

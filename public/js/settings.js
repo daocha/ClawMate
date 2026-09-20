@@ -20,17 +20,31 @@ function urlBase64ToUint8Array(base64) {
 export const pushSupported = () =>
   'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
 
+// A PushSubscription can be rotated or discarded while the PWA is closed.
+// Always post the browser's current subscription so a restarted server and a
+// rotated endpoint cannot leave this device silently unreachable.
+export async function syncPushSubscription(swReg, { subscribeIfMissing = false } = {}) {
+  if (!pushSupported() || Notification.permission !== 'granted') return null;
+
+  let sub = await swReg.pushManager.getSubscription();
+  if (!sub && subscribeIfMissing) {
+    const { publicKey } = await api('/api/push/key');
+    sub = await swReg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(publicKey)
+    });
+  }
+
+  if (sub) await api('/api/push/subscribe', { method: 'POST', body: sub.toJSON() });
+  return sub;
+}
+
 export async function enablePush(swReg) {
   if (!pushSupported()) return { ok: false, reason: 'pushUnsupported' };
   const permission = await Notification.requestPermission();
   if (permission !== 'granted') return { ok: false, reason: 'pushDenied' };
 
-  const { publicKey } = await api('/api/push/key');
-  const sub = await swReg.pushManager.subscribe({
-    userVisibleOnly: true,
-    applicationServerKey: urlBase64ToUint8Array(publicKey)
-  });
-  await api('/api/push/subscribe', { method: 'POST', body: sub.toJSON() });
+  await syncPushSubscription(swReg, { subscribeIfMissing: true });
   return { ok: true };
 }
 
@@ -92,6 +106,30 @@ export function initSettings(els, ctx) {
     els.needAlerts.checked = serverCfg.needAlerts !== false;
     els.dndStart.value = serverCfg.dndStart || '00:00';
     els.dndEnd.value = serverCfg.dndEnd || '10:00';
+    els.noteExpiryDays.value = serverCfg.noteExpiryDays || 7;
+    // A stored UI preference is not proof that this browser/PWA still has a
+    // live Push subscription. This matters especially after reinstalling a
+    // phone PWA or replacing its service worker: show the real state so a
+    // user can subscribe again instead of silently missing notifications.
+    if (pushSupported()) {
+      try {
+        const registration = await ctx.swReady();
+        // Reconcile every launch without prompting.  We only recreate a
+        // missing subscription when this user previously chose to enable it;
+        // turning the toggle off must remain off even though permission stays
+        // granted in the browser.
+        const subscription = await syncPushSubscription(registration, {
+          subscribeIfMissing: ctx.prefs.get('push', false)
+        });
+        const subscribed = Boolean(subscription);
+        els.push.checked = subscribed;
+        els.pushTestBtn.disabled = !subscribed;
+        ctx.prefs.set('push', subscribed);
+      } catch { els.push.checked = false; els.pushTestBtn.disabled = true; }
+    } else {
+      els.push.checked = false;
+      els.pushTestBtn.disabled = true;
+    }
     fillAgents([], serverCfg.agentId, null);
     if (serverCfg.configured) loadAgents(serverCfg.agentId);
     return serverCfg;
@@ -109,7 +147,8 @@ export function initSettings(els, ctx) {
           transport: els.transport.value,
           needAlerts: els.needAlerts.checked,
           dndStart: els.dndStart.value || '00:00',
-          dndEnd: els.dndEnd.value || '10:00'
+          dndEnd: els.dndEnd.value || '10:00',
+          noteExpiryDays: Number(els.noteExpiryDays.value) || 7
         }
       });
       els.token.value = '';
@@ -154,12 +193,28 @@ export function initSettings(els, ctx) {
     const reg = await ctx.swReady();
     if (on) {
       const res = await enablePush(reg).catch((e) => ({ ok: false, reason: e.message }));
-      if (res.ok) { flash(els.pushResult, t('pushOn'), 'ok'); ctx.prefs.set('push', true); }
+      if (res.ok) { flash(els.pushResult, t('pushOn'), 'ok'); ctx.prefs.set('push', true); els.pushTestBtn.disabled = false; }
       else { els.push.checked = false; flash(els.pushResult, t(res.reason) || res.reason, 'err'); }
     } else {
       await disablePush(reg);
       ctx.prefs.set('push', false);
+      els.pushTestBtn.disabled = true;
       flash(els.pushResult, t('pushOff'));
+    }
+  }
+
+  async function testPush() {
+    els.pushTestBtn.disabled = true;
+    try {
+      const subscription = await syncPushSubscription(await ctx.swReady());
+      if (!subscription) throw new Error('pushTestNoSubscription');
+      await api('/api/push/test', { method: 'POST', body: subscription.toJSON() });
+      flash(els.pushResult, t('pushTestQueued'), 'ok');
+    } catch (err) {
+      const reason = t(err.message) !== err.message ? t(err.message) : err.message;
+      flash(els.pushResult, `${t('pushTestFailed')} (${reason})`, 'err');
+    } finally {
+      els.pushTestBtn.disabled = !els.push.checked;
     }
   }
 
@@ -167,6 +222,7 @@ export function initSettings(els, ctx) {
   els.testBtn.addEventListener('click', test);
   els.reloadAgents.addEventListener('click', () => loadAgents());
   els.push.addEventListener('change', (e) => togglePush(e.target.checked));
+  els.pushTestBtn.addEventListener('click', testPush);
 
   [['haptics', els.haptics], ['reducedMotion', els.motion]].forEach(([key, el]) => {
     el.checked = ctx.prefs.get(key, key === 'haptics');
@@ -176,6 +232,7 @@ export function initSettings(els, ctx) {
     });
   });
   els.push.checked = ctx.prefs.get('push', false);
+  els.pushTestBtn.disabled = !els.push.checked;
   els.petName.value = ctx.prefs.get('petName', '');
   els.petName.addEventListener('change', () => ctx.prefs.set('petName', els.petName.value.trim()));
 

@@ -14,7 +14,7 @@
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" href="./icons/icon-192.png" type="image/png" sizes="192x192">
 <link rel="apple-touch-icon" href="./icons/icon-180.png">
-<link rel="stylesheet" href="./css/app.css?v=35">
+<link rel="stylesheet" href="./css/app.css?v=41">
 </head>
 <body>
 <div class="app" data-view="pet">
@@ -104,6 +104,29 @@
       </form>
     </section>
 
+    <!-- ----------------------------------------------------------- notes -->
+    <section class="view view-notes" id="view-notes">
+      <div class="notes-inner">
+        <div class="notes-head">
+          <div><h2 data-i18n="notesTitle"></h2><p data-i18n="notesHint"></p></div>
+          <div class="notes-head-actions"><button type="button" class="btn ghost small" id="notesSelectBtn" data-i18n="selectNotes"></button><button type="button" class="icon-btn notes-add" id="noteAddBtn" data-i18n-label="addNote" data-i18n-title="addNote">＋</button></div>
+        </div>
+        <div class="notes-selection-bar" id="notesSelectionBar" hidden><span id="notesSelectionCount"></span><div><button type="button" class="btn ghost small" id="cancelNotesSelectionBtn" data-i18n="cancel"></button><button type="button" class="btn small notes-bulk-delete" id="deleteSelectedNotesBtn" disabled></button></div></div>
+        <label class="notes-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.2"/><path d="m16 16 4.2 4.2" stroke-linecap="round"/></svg><input id="noteSearch" type="search" autocomplete="off" data-i18n-ph="notesSearch"></label>
+        <section class="schedules-fold">
+          <button class="schedules-toggle" id="schedulesToggle" type="button" aria-expanded="false"><span><b data-i18n="schedulesTitle"></b><small id="schedulesCount"></small></span><i aria-hidden="true">⌄</i></button>
+          <div class="schedules-panel" id="schedulesPanel" hidden><p class="schedules-empty" id="schedulesEmpty" data-i18n="schedulesEmpty"></p><div id="schedulesList"></div></div>
+        </section>
+        <p class="notes-empty" id="notesEmpty" data-i18n="notesEmpty"></p>
+        <div class="notes-list" id="notesList"></div>
+        <section class="expired-notes" id="expiredNotes" hidden>
+          <div class="expired-notes-head"><h3 data-i18n="expiredNotesTitle"></h3><button type="button" class="btn ghost small" id="deleteExpiredBtn" data-i18n="deleteExpired"></button></div>
+          <p data-i18n="expiredNotesHint"></p>
+          <div class="notes-list" id="expiredNotesList"></div>
+        </section>
+      </div>
+    </section>
+
     <!-- -------------------------------------------------------- settings -->
     <section class="view view-settings" id="view-settings">
       <div class="settings-inner">
@@ -159,6 +182,7 @@
             <span data-i18n="enablePush"></span>
           </label>
           <small data-i18n="pushHelp"></small>
+          <button class="btn secondary" type="button" id="pushTestBtn" data-i18n="pushTest"></button>
           <p class="test-result" id="pushResult"></p>
           <label class="toggle"><input type="checkbox" id="setHaptics" checked><span data-i18n="hapticsOn"></span></label>
           <label class="toggle"><input type="checkbox" id="setMotion"><span data-i18n="reducedMotion"></span></label>
@@ -171,6 +195,11 @@
               <span>–</span>
               <input id="setDndEnd" type="time" value="10:00">
             </div>
+          </label>
+          <label class="field">
+            <span data-i18n="noteExpiryDays"></span>
+            <input id="setNoteExpiryDays" type="number" inputmode="numeric" min="1" max="3650" step="1">
+            <small data-i18n="noteExpiryDaysHelp"></small>
           </label>
         </fieldset>
 
@@ -196,11 +225,52 @@
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h16v11H12l-5 3.5v-3.5H4z"/></svg>
       <span data-i18n="tabChat"></span>
     </button>
+    <button class="tab" data-view="notes">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.8h12v16.4H6z"/><path d="M9 8h6M9 12h6M9 16h3" stroke-linecap="round"/></svg>
+      <span data-i18n="tabNotes"></span>
+    </button>
     <button class="tab" data-view="settings">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.8v3M12 18.2v3M2.8 12h3M18.2 12h3M5.4 5.4l2.1 2.1M16.5 16.5l2.1 2.1M18.6 5.4l-2.1 2.1M7.5 16.5l-2.1 2.1"/></svg>
       <span data-i18n="tabSettings"></span>
     </button>
   </nav>
+
+  <div class="sheet" id="noteSheet" hidden>
+    <div class="sheet-backdrop" data-note-close></div>
+    <div class="sheet-body note-sheet-body">
+      <div class="sheet-grabber"></div>
+      <h3 id="noteSheetTitle"></h3>
+      <button type="button" class="note-detail-content" id="noteContentBtn"></button>
+      <p class="note-expiry" id="noteExpiryText"></p>
+      <textarea id="noteInput" maxlength="1200" rows="5" data-i18n-ph="notePlaceholder"></textarea>
+      <div class="note-sheet-actions">
+        <button type="button" class="icon-btn mic" id="noteMicBtn" data-i18n-label="voice"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3"/></svg></button>
+        <button type="button" class="btn ghost note-delete" id="noteDeleteBtn" data-i18n="deleteNote"></button>
+        <button type="button" class="btn ghost" id="notePinBtn"></button>
+        <button type="button" class="btn primary" id="noteSaveBtn"></button>
+      </div>
+    </div>
+  </div>
+  <div class="app-modal" id="noteDeleteModal" hidden role="dialog" aria-modal="true" aria-labelledby="noteDeleteModalTitle">
+    <div class="app-modal-backdrop" data-note-delete-cancel></div>
+    <section class="app-modal-card">
+      <span class="modal-icon note-delete-modal-icon">⌫</span>
+      <h3 id="noteDeleteModalTitle" data-i18n="deleteNote"></h3>
+      <p id="noteDeleteModalText"></p>
+      <div class="modal-actions"><button class="btn ghost" type="button" data-note-delete-cancel data-i18n="cancel"></button><button class="btn primary note-delete-confirm" type="button" id="confirmNoteDeleteBtn" data-i18n="deleteNote"></button></div>
+    </section>
+  </div>
+  <div class="sheet" id="scheduleSheet" hidden>
+    <div class="sheet-backdrop" data-schedule-close></div>
+    <div class="sheet-body schedule-sheet-body">
+      <div class="sheet-grabber"></div>
+      <h3 data-i18n="editSchedule"></h3>
+      <p class="schedule-note-text" id="scheduleNoteText"></p>
+      <label class="field"><span data-i18n="scheduleTime"></span><input id="scheduleTimeInput" type="datetime-local"></label>
+      <label class="field"><span data-i18n="scheduleRepeat"></span><select id="scheduleRepeatInput"><option value="once" data-i18n="scheduleOnce"></option><option value="yearly" data-i18n="scheduleYearly"></option></select></label>
+      <div class="note-sheet-actions"><button class="btn ghost" type="button" data-schedule-close data-i18n="cancel"></button><button class="btn primary" type="button" id="saveScheduleBtn" data-i18n="saveSchedule"></button></div>
+    </div>
+  </div>
 
   <div class="sheet" id="sheet" hidden>
     <div class="sheet-backdrop" data-close></div>
@@ -285,6 +355,6 @@
   </div>
 </div>
 
-<script type="module" src="./js/app.js?v=40"></script>
+<script type="module" src="./js/app.js?v=51"></script>
 </body>
 </html>
