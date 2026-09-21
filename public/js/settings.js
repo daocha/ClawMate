@@ -112,6 +112,9 @@ export function initSettings(els, ctx) {
     // phone PWA or replacing its service worker: show the real state so a
     // user can subscribe again instead of silently missing notifications.
     if (pushSupported()) {
+      const storedPush = ctx.prefs.get('push', false);
+      els.push.checked = storedPush;
+      els.pushTestBtn.disabled = !storedPush;
       try {
         const registration = await ctx.swReady();
         // Reconcile every launch without prompting.  We only recreate a
@@ -119,13 +122,17 @@ export function initSettings(els, ctx) {
         // turning the toggle off must remain off even though permission stays
         // granted in the browser.
         const subscription = await syncPushSubscription(registration, {
-          subscribeIfMissing: ctx.prefs.get('push', false)
+          subscribeIfMissing: storedPush
         });
         const subscribed = Boolean(subscription);
         els.push.checked = subscribed;
         els.pushTestBtn.disabled = !subscribed;
         ctx.prefs.set('push', subscribed);
-      } catch { els.push.checked = false; els.pushTestBtn.disabled = true; }
+      } catch {
+        // A cold launch can hit this before the service worker/network is
+        // ready. That is not proof the user turned notifications off, so
+        // keep showing the stored preference instead of forcing it off.
+      }
     } else {
       els.push.checked = false;
       els.pushTestBtn.disabled = true;
