@@ -100,6 +100,13 @@ export const COMPANION_DEFS = {
       'zh-TW': (list) => `你現在很想要${list}，會嘟嘴或拉拉你的袖子撒嬌地討。`,
       en: (list) => `You're genuinely craving ${list} right now - pout a little and tug at their sleeve to ask.`
     },
+    // First-person version of `craving`, used verbatim as push notification body
+    // (see buildAlertNotification) - unlike `craving`, which is a second-person
+    // instruction fed to the chat persona prompt, this is read directly by the user.
+    notify: {
+      'zh-TW': (list) => `我現在好想要${list}，想嘟嘴拉拉你的袖子跟你撒嬌地討。`,
+      en: (list) => `I'm genuinely craving ${list} right now - I'll pout a little and tug at your sleeve to ask.`
+    },
     content: { 'zh-TW': '現在被照顧得很好，心情像充飽電一樣雀躍。', en: "You're well cared for right now and feel charged-up and cheerful." },
     actions: {
       share: { label: '分享今天的小事', affinity: 4, needs: { sharing: 26 }, cooldownMin: 8 },
@@ -129,6 +136,10 @@ export const COMPANION_DEFS = {
       'zh-TW': (list) => `你現在很需要${list}，但不會直接開口，只會用含蓄優雅的方式暗示。`,
       en: (list) => `You genuinely need ${list} right now, but won't ask outright - only hint at it gracefully.`
     },
+    notify: {
+      'zh-TW': (list) => `我現在有點需要${list}，不會直接開口，只是想含蓄地跟你暗示一下。`,
+      en: (list) => `I could genuinely use ${list} right now - I won't ask outright, just a gentle hint.`
+    },
     content: { 'zh-TW': '此刻心情平靜滿足，語氣也顯得從容。', en: 'You feel calm and content right now, unhurried in tone.' },
     actions: {
       deepTalk: { label: '深度聊聊', affinity: 5, needs: { dialogue: 30 }, cooldownMin: 10 },
@@ -155,6 +166,10 @@ export const COMPANION_DEFS = {
     craving: {
       'zh-TW': (list) => `你現在很想要${list}，會用喵喵叫或蹭你的方式討，語氣裡帶點小任性。`,
       en: (list) => `You're craving ${list} right now - meow or nuzzle to ask, with a bit of a bratty edge.`
+    },
+    notify: {
+      'zh-TW': (list) => `我現在好想要${list}喔，想喵喵叫蹭蹭你跟你討，語氣有點任性。`,
+      en: (list) => `I'm craving ${list} right now - gonna meow and nuzzle up to you to ask, a little bratty about it.`
     },
     content: { 'zh-TW': '現在心滿意足，慵懶又放鬆。', en: "You're perfectly content right now, lazy and relaxed." },
     actions: {
@@ -185,6 +200,10 @@ export const COMPANION_DEFS = {
     craving: {
       'zh-TW': (list) => `你現在很想要${list}，會直接興奮地跟你討，甚至用行動表現迫不及待。`,
       en: (list) => `You're craving ${list} right now - ask for it excitedly and outright, can barely sit still.`
+    },
+    notify: {
+      'zh-TW': (list) => `我現在超想要${list}的，忍不住興奮地衝過去跟你討！`,
+      en: (list) => `I really want ${list} right now - I can barely sit still, gotta come ask you excitedly!`
     },
     content: { 'zh-TW': '現在精神超好，開心又滿足。', en: "You're full of energy right now, happy and satisfied." },
     actions: {
@@ -495,8 +514,9 @@ export function markNeedAlertsSent(keys) {
   save();
 }
 
-// Reuses the same per-companion `craving` line as buildPersonaPrompt() so the
-// push notification reads like the pet itself nudging you, in its own voice,
+// Uses each companion's first-person `notify` line (a counterpart to the
+// second-person `craving` line fed to buildPersonaPrompt()) so the push
+// notification reads like the pet itself nudging you, in its own voice,
 // instead of a generic system alert - falls back to the old generic copy for
 // an unknown id.
 export function buildAlertNotification(id, keys, lang) {
@@ -506,7 +526,7 @@ export function buildAlertNotification(id, keys, lang) {
   const labels = keys.map((k) => needLabel(k, lang));
   const list = labels.join(zh ? '、' : ', ');
   const name = def?.name?.[key];
-  const body = def?.craving?.[key]?.(list);
+  const body = def?.notify?.[key]?.(list);
   if (name && body) return { title: zh ? `${name} 想你了` : `${name} misses you`, body };
   return zh
     ? { title: 'ClawMate 提醒', body: `${list} 已經進入紅色警戒，快回來照顧一下吧！` }

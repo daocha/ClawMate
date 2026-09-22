@@ -113,8 +113,17 @@ export function initSettings(els, ctx) {
     // user can subscribe again instead of silently missing notifications.
     if (pushSupported()) {
       const storedPush = ctx.prefs.get('push', false);
-      els.push.checked = storedPush;
-      els.pushTestBtn.disabled = !storedPush;
+      const backendPush = Boolean(serverCfg.pushEnabled);
+      // The backend's `pushEnabled` is a durable backup of the same intent -
+      // if this browser's local flag was lost (wiped storage, a prior version
+      // of this bug, a fresh reinstall of the PWA) but the backend still
+      // remembers push should be on, prefer trying to resubscribe over
+      // silently staying off. Never the other direction: a backend that
+      // hasn't caught up yet (or says off) must not turn off a device that
+      // locally still knows it should be on.
+      const wantPush = storedPush || backendPush;
+      els.push.checked = wantPush;
+      els.pushTestBtn.disabled = !wantPush;
       try {
         const registration = await ctx.swReady();
         // Reconcile every launch without prompting.  We only recreate a
@@ -122,12 +131,23 @@ export function initSettings(els, ctx) {
         // turning the toggle off must remain off even though permission stays
         // granted in the browser.
         const subscription = await syncPushSubscription(registration, {
-          subscribeIfMissing: storedPush
+          subscribeIfMissing: wantPush
         });
         const subscribed = Boolean(subscription);
         els.push.checked = subscribed;
         els.pushTestBtn.disabled = !subscribed;
-        ctx.prefs.set('push', subscribed);
+        // Only ever persist a *confirmed* subscription here. Coming back
+        // unsubscribed can mean the user genuinely revoked permission, but it
+        // can just as easily be a transient miss (e.g. Notification.permission
+        // racing readiness on a cold launch) - and unlike the checkbox, which
+        // is fine reflecting the momentary state, overwriting the stored
+        // preference with false would stop this device from ever retrying the
+        // subscription on a later launch. Only an explicit toggle (togglePush)
+        // should turn the stored preference off.
+        if (subscribed) {
+          ctx.prefs.set('push', true);
+          if (!backendPush) savePushEnabled(true);
+        }
       } catch {
         // A cold launch can hit this before the service worker/network is
         // ready. That is not proof the user turned notifications off, so
@@ -195,18 +215,27 @@ export function initSettings(els, ctx) {
     }
   }
 
+  // Keeps the backend's durable `pushEnabled` backup (see load()) in sync with
+  // this device's explicit choice. Best-effort: a failed write here must not
+  // block the local toggle, which already took effect.
+  const savePushEnabled = (enabled) =>
+    api('/api/settings', { method: 'PUT', body: { pushEnabled: enabled } })
+      .then((cfg) => { serverCfg = cfg; })
+      .catch(() => {});
+
   async function togglePush(on) {
     if (!pushSupported()) { flash(els.pushResult, t('pushUnsupported'), 'err'); els.push.checked = false; return; }
     const reg = await ctx.swReady();
     if (on) {
       const res = await enablePush(reg).catch((e) => ({ ok: false, reason: e.message }));
-      if (res.ok) { flash(els.pushResult, t('pushOn'), 'ok'); ctx.prefs.set('push', true); els.pushTestBtn.disabled = false; }
+      if (res.ok) { flash(els.pushResult, t('pushOn'), 'ok'); ctx.prefs.set('push', true); els.pushTestBtn.disabled = false; savePushEnabled(true); }
       else { els.push.checked = false; flash(els.pushResult, t(res.reason) || res.reason, 'err'); }
     } else {
       await disablePush(reg);
       ctx.prefs.set('push', false);
       els.pushTestBtn.disabled = true;
       flash(els.pushResult, t('pushOff'));
+      savePushEnabled(false);
     }
   }
 
