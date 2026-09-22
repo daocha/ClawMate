@@ -24,7 +24,8 @@ const DEFAULTS = {
   dndStart: '00:00',
   dndEnd: '10:00',
   needAlerts: true,
-  noteExpiryDays: 7
+  noteExpiryDays: 7,
+  pushEnabled: false
 };
 
 fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -70,6 +71,10 @@ export function publicConfig() {
     dndEnd: c.dndEnd,
     needAlerts: c.needAlerts !== false,
     noteExpiryDays: c.noteExpiryDays,
+    // A durable backup of "the user wants push on", alongside the per-browser
+    // localStorage flag the client normally relies on - see public/js/settings.js
+    // load(), which falls back to this when local state was lost or never synced.
+    pushEnabled: Boolean(c.pushEnabled),
     hasToken: Boolean(c.token),
     configured: Boolean(c.serverUrl)
   };

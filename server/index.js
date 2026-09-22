@@ -95,6 +95,7 @@ app.put('/api/settings', (req, res) => {
     if (Number.isInteger(days) && days >= 1 && days <= 3650) patch.noteExpiryDays = days;
   }
   if ('needAlerts' in req.body) patch.needAlerts = !!req.body.needAlerts;
+  if ('pushEnabled' in req.body) patch.pushEnabled = !!req.body.pushEnabled;
   saveConfig(patch);
   res.json(publicConfig());
 });
